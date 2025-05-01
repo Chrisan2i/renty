@@ -63,7 +63,7 @@ class FooterSection extends StatelessWidget {
           const SizedBox(height: 16),
           Center(
             child: Text(
-              '© 2024 ToolShare. All rights reserved.',
+              '© 2025 Renty. All rights reserved.',
               style: GoogleFonts.inter(
                 color: const Color(0xFF999999),
                 fontSize: 16,

@@ -80,7 +80,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                       onPressed: () {},
                       icon: Image.network(
-                        'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png',
+                        'https://res.cloudinary.com/doyt5r47e/image/upload/v1746128729/google_dogxyt.webp',
                         height: 18,
                       ),
                         label: const Text("Continue with Google"),

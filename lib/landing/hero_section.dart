@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'search_page.dart';
 
 class HeroSection extends StatelessWidget {
   const HeroSection({super.key});
@@ -58,7 +59,12 @@ class HeroSection extends StatelessWidget {
           ),
           const SizedBox(height: 32),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SearchPage()),
+              );
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF0085FF),
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
