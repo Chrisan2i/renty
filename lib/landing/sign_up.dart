@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'login.dart';
+
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -13,6 +15,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final _fullNameController = TextEditingController();
+  final _UsernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -20,35 +23,104 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void _register() async {
     if (_formKey.currentState!.validate()) {
       try {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        // Crear cuenta con correo y contraseña
+        UserCredential userCredential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Account created successfully')),
-        );
+        User? user = userCredential.user;
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-        );
+        if (user != null) {
+          // Guardar información del usuario en Firestore
+          await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+            'username': _UsernameController.text.trim(),
+            'fullName': _fullNameController.text.trim(),
+            'email': _emailController.text.trim(),
+            'phone': '',
+            'profileImageUrl': '',
+            'location': '',
+            'createdAt': FieldValue.serverTimestamp(),
+            'lastLoginAt': FieldValue.serverTimestamp(),
+            'role': 'user',
+            'identityVerification': {
+              'type': '',
+              'number': '',
+              'frontImageUrl': '',
+              'backImageUrl': '',
+              'selfieWithIdUrl': '',
+              'faceScanData': null,
+              'verified': false,
+              'verifiedBy': '',
+              'verifiedAt': null,
+            },
+            'address': {
+              'street': '',
+              'city': '',
+              'state': '',
+              'zip': '',
+              'country': '',
+              'latitude': null,
+              'longitude': null,
+            },
+            'rating': 0,
+            'totalRentsMade': 0,
+            'totalRentsReceived': 0,
+            'wallet': {
+              'balance': 0.0,
+              'currency': 'USD',
+              'lastUpdated': FieldValue.serverTimestamp(),
+            },
+            'paymentMethods': [],
+            'preferences': {
+              'language': 'es',
+              'receiveNotifications': true,
+              'darkMode': false,
+            },
+            'blocked': false,
+            'banReason': null,
+            'reports': 0,
+            'notesByAdmin': '',
+          });
+
+          // Mostrar mensaje de éxito
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Cuenta creada exitosamente'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+
+          // Redirigir al Landing Page ya logueado
+          Navigator.pushReplacementNamed(context, '/landing');
+        } else {
+          throw Exception('No se pudo obtener el usuario');
+        }
       } on FirebaseAuthException catch (e) {
-        String message = 'Registration failed';
+        String message = 'Error al registrar';
         if (e.code == 'email-already-in-use') {
-          message = 'Email is already in use.';
+          message = 'Este correo ya está en uso.';
         } else if (e.code == 'invalid-email') {
-          message = 'Invalid email address.';
+          message = 'Correo inválido.';
         } else if (e.code == 'weak-password') {
-          message = 'Password is too weak.';
+          message = 'Contraseña muy débil.';
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(message)),
         );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
       }
     }
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -127,6 +199,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       validator: (value) =>
                       value!.trim().isEmpty ? 'Name is required' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text("Username", style: TextStyle(color: Colors
+                          .grey)),
+                    ),
+                    const SizedBox(height: 6),
+                    TextFormField(
+                      controller: _UsernameController,
+                      decoration: const InputDecoration(
+                        hintText: "Enter a Username",
+                        filled: true,
+                        fillColor: Color(0xFF111111),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white24),
+                        ),
+                      ),
+                      validator: (value) =>
+                      value!.trim().isEmpty ? 'username is required' : null,
                     ),
                     const SizedBox(height: 16),
                     const Align(
@@ -217,7 +309,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           backgroundColor: const Color(0xFF0085FF),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        onPressed: _register,
+                        onPressed: _register ,
                         child: const Text(
                           "Create Account",
                           style: TextStyle(fontWeight: FontWeight.bold),

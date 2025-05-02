@@ -5,6 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'landing/landing_page.dart';
 import 'landing/login.dart';
 import '/landing/auth/auth_gate.dart';
+import 'landing/sign_up.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,7 +47,14 @@ class RentyApp extends StatelessWidget {
           ThemeData.dark().textTheme,
         ),
       ),
-      home: const LandingPage(),
+      initialRoute: '/landing',
+      routes: {
+        '/landing': (context) => const LandingPage(), // sin login
+        '/login': (context) => const LoginScreen(),
+        '/signup': (context) => const SignUpScreen(),
+        '/home': (context) => const LandingPage(), // después de login exitoso
+      },
     );
   }
+
 }
