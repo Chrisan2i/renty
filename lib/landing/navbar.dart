@@ -8,6 +8,7 @@ import 'search_page.dart';
 import 'landing_page.dart';
 import 'profile_settings_page.dart';
 import 'my_profile_page.dart';
+import 'my_rentals_page.dart';
 
 class Navbar extends StatelessWidget {
   final String email;
@@ -21,7 +22,7 @@ class Navbar extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
-      color: Colors.black.withOpacity(0.95),
+      color: Colors.black.withAlpha(242), // corregido .withOpacity
       child: Center(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 1200),
@@ -57,20 +58,14 @@ class Navbar extends StatelessWidget {
 
                   if (email != null) ...[
                     const SizedBox(width: 10),
-                    _userMenu(),
+                    _userMenu(context),
                   ] else ...[
                     _navButton('Sign In', () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
-                      );
+                      Navigator.pushReplacementNamed(context, '/login');
                     }),
                     const SizedBox(width: 10),
                     _primaryButton('Get Started', () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const SignUpScreen()),
-                      );
+                      Navigator.pushReplacementNamed(context, '/singup');
                     }),
                   ],
                 ],
@@ -125,7 +120,8 @@ class Navbar extends StatelessWidget {
     );
   }
 
-  Widget _userMenu() {
+  // 🔧 Solo se corrigió para aceptar context
+  Widget _userMenu(BuildContext context) {
     return PopupMenuButton<int>(
       offset: const Offset(0, 50),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -154,7 +150,7 @@ class Navbar extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const MyProfilePage()),
                   );
                 },
-                child:  Text("Profile", style: TextStyle(color: Colors.white)),
+                child: Text("Profile", style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -172,7 +168,7 @@ class Navbar extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const ProfileSettingsPage()),
                   );
                 },
-                child:  Text("Settings", style: TextStyle(color: Colors.white)),
+                child: Text("Settings", style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -202,13 +198,22 @@ class Navbar extends StatelessWidget {
       onSelected: (value) {
         switch (value) {
           case 0:
-          // Navegar a Profile
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const MyProfilePage()),
+            );
             break;
           case 1:
-          // Navegar a Settings
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfileSettingsPage()),
+            );
             break;
           case 2:
-          // Navegar a My Rentals
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const MyRentalsPage()),
+            );
             break;
           case 3:
             FirebaseAuth.instance.signOut();

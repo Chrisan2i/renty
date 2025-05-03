@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:renty/landing/my_rentals_page.dart';
 import 'landing/landing_page.dart';
 import 'landing/login.dart';
 import '/landing/auth/auth_gate.dart';
 import 'landing/sign_up.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'landing/my_rentals_page.dart';
 
 
 void main() async {
@@ -52,7 +54,8 @@ class RentyApp extends StatelessWidget {
         '/landing': (context) => const LandingPage(), // sin login
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignUpScreen(),
-        '/home': (context) => const LandingPage(), // después de login exitoso
+        '/home': (context) => const LandingPage(),
+        '/myrentals': (context) => const MyRentalsPage(),
       },
     );
   }
