@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:renty/widgets/navbar.dart';
-import 'package:renty/landing/product.dart';
+import 'package:renty/mains/product.dart';
 import 'package:renty/widgets/footer.dart';
 
 class ProductPage extends StatelessWidget {

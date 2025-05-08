@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:renty/landing/profile_settings.dart';
+import 'package:renty/mains/profile_settings.dart';
 import 'package:renty/widgets/navbar.dart';
 import 'package:renty/widgets/footer.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:renty/landing/my_rentals.dart';
+import 'package:renty/mains/my_rentals.dart';
 import 'package:renty/widgets/navbar.dart';
 import 'package:renty/widgets/footer.dart';
 

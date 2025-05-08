@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:renty/landing/my_profile.dart';
+import 'package:renty/mains/my_profile.dart';
 import 'package:renty/pages/login_page.dart';
 import 'package:renty/pages/sign_up_page.dart';
 import 'package:renty/pages/search_page.dart';
