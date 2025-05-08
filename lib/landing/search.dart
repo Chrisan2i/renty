@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'product_page.dart';
+import 'package:renty/pages/product_page.dart';
 
 void main() {
   runApp(const FigmaToCodeApp());

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'navbar.dart';
-import 'product.dart';
-import 'footer.dart';
+import 'package:renty/landing/search.dart';
+import 'package:renty/widgets/navbar.dart';
+import 'package:renty/widgets/footer.dart';
 
-class ProductPage extends StatelessWidget {
-  const ProductPage({super.key});
+
+class SearchPage extends StatelessWidget {
+  const SearchPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +21,7 @@ class ProductPage extends StatelessWidget {
           body: ListView(
             children: [
               Navbar(email: email),
-              Product(),
+              Search(),
               FooterSection(),
             ],
           ),

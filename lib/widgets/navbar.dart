@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:renty/landing/my_profile.dart';
-import 'login.dart';
-import 'sign_up.dart';
-import 'search_page.dart';
-import 'landing_page.dart';
-import 'profile_settings_page.dart';
-import 'my_profile_page.dart';
-import 'my_rentals_page.dart';
+import 'package:renty/pages/login_page.dart';
+import 'package:renty/pages/sign_up_page.dart';
+import 'package:renty/pages/search_page.dart';
+import '../pages/landing_page.dart';
+import 'package:renty/pages/profile_settings_page.dart';
+import 'package:renty/pages/my_profile_page.dart';
+import 'package:renty/pages/my_rentals_page.dart';
 
 class Navbar extends StatelessWidget {
   final String email;
@@ -65,7 +65,7 @@ class Navbar extends StatelessWidget {
                     }),
                     const SizedBox(width: 10),
                     _primaryButton('Get Started', () {
-                      Navigator.pushReplacementNamed(context, '/singup');
+                      Navigator.pushReplacementNamed(context, '/signup');
                     }),
                   ],
                 ],
@@ -139,22 +139,20 @@ class Navbar extends StatelessWidget {
       itemBuilder: (context) => [
         PopupMenuItem(
           value: 0,
+          onTap: () {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Navigator.pushReplacementNamed(context, '/profile');
+            });
+          },
           child: Row(
-            children: [
+            children: const [
               Icon(Icons.account_circle, color: Colors.white70),
               SizedBox(width: 10),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const MyProfilePage()),
-                  );
-                },
-                child: Text("Profile", style: TextStyle(color: Colors.white)),
-              ),
+              Text("Profile", style: TextStyle(color: Colors.white)),
             ],
           ),
         ),
+
         PopupMenuItem(
           value: 1,
           child: Row(
@@ -163,10 +161,7 @@ class Navbar extends StatelessWidget {
               SizedBox(width: 10),
               TextButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ProfileSettingsPage()),
-                  );
+                  Navigator.pushReplacementNamed(context, '/profile_settings');
                 },
                 child: Text("Settings", style: TextStyle(color: Colors.white)),
               ),

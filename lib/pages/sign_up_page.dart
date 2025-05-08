@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'login.dart';
+import 'login_page.dart';
+import '../../services/auth_service.dart';
 
 
 class SignUpScreen extends StatefulWidget {
@@ -23,94 +22,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void _register() async {
     if (_formKey.currentState!.validate()) {
       try {
-        // Crear cuenta con correo y contraseña
-        UserCredential userCredential = await FirebaseAuth.instance
-            .createUserWithEmailAndPassword(
+        await AuthService().registerWithEmail(
+          fullName: _fullNameController.text.trim(),
+          username: _UsernameController.text.trim(),
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
 
-        User? user = userCredential.user;
-
-        if (user != null) {
-          // Guardar información del usuario en Firestore
-          await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-            'username': _UsernameController.text.trim(),
-            'fullName': _fullNameController.text.trim(),
-            'email': _emailController.text.trim(),
-            'phone': '',
-            'profileImageUrl': '',
-            'location': '',
-            'createdAt': FieldValue.serverTimestamp(),
-            'lastLoginAt': FieldValue.serverTimestamp(),
-            'role': 'user',
-            'identityVerification': {
-              'type': '',
-              'number': '',
-              'frontImageUrl': '',
-              'backImageUrl': '',
-              'selfieWithIdUrl': '',
-              'faceScanData': null,
-              'verified': false,
-              'verifiedBy': '',
-              'verifiedAt': null,
-            },
-            'address': {
-              'street': '',
-              'city': '',
-              'state': '',
-              'zip': '',
-              'country': '',
-              'latitude': null,
-              'longitude': null,
-            },
-            'rating': 0,
-            'totalRentsMade': 0,
-            'totalRentsReceived': 0,
-            'wallet': {
-              'balance': 0.0,
-              'currency': 'USD',
-              'lastUpdated': FieldValue.serverTimestamp(),
-            },
-            'paymentMethods': [],
-            'preferences': {
-              'language': 'es',
-              'receiveNotifications': true,
-              'darkMode': false,
-            },
-            'blocked': false,
-            'banReason': null,
-            'reports': 0,
-            'notesByAdmin': '',
-          });
-
-          // Mostrar mensaje de éxito
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Cuenta creada exitosamente'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
-            ),
-          );
-
-          // Redirigir al Landing Page ya logueado
-          Navigator.pushReplacementNamed(context, '/landing');
-        } else {
-          throw Exception('No se pudo obtener el usuario');
-        }
-      } on FirebaseAuthException catch (e) {
-        String message = 'Error al registrar';
-        if (e.code == 'email-already-in-use') {
-          message = 'Este correo ya está en uso.';
-        } else if (e.code == 'invalid-email') {
-          message = 'Correo inválido.';
-        } else if (e.code == 'weak-password') {
-          message = 'Contraseña muy débil.';
-        }
-
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
+          const SnackBar(content: Text('Cuenta creada exitosamente')),
         );
+
+        Navigator.pushReplacementNamed(context, '/landing');
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${e.toString()}')),
@@ -118,9 +41,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
       }
     }
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {

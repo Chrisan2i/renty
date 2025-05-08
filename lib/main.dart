@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:renty/landing/my_rentals_page.dart';
-import 'landing/landing_page.dart';
-import 'landing/login.dart';
-import '/landing/auth/auth_gate.dart';
-import 'landing/sign_up.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'landing/my_rentals_page.dart';
+import 'package:renty/pages/my_profile_page.dart';
+import 'package:renty/pages/my_rentals_page.dart';
+import 'pages/landing_page.dart';
+import 'package:renty/pages/login_page.dart';
+import 'package:renty/pages/sign_up_page.dart';
+import 'package:renty/pages/add_product_page.dart';
+import 'package:renty/pages/product_list_page.dart';
+import 'package:renty/pages/rental_requests_page.dart';
+import 'package:renty/pages/inbox_page.dart';
+import 'package:renty/pages/profile_settings_page.dart';
+
 
 
 void main() async {
@@ -54,8 +58,14 @@ class RentyApp extends StatelessWidget {
         '/landing': (context) => const LandingPage(), // sin login
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignUpScreen(),
+        '/profile': (context) => const MyProfilePage(),
         '/home': (context) => const LandingPage(),
         '/myrentals': (context) => const MyRentalsPage(),
+        '/add-product': (context) => const AddProductPage(),
+        '/product-list': (context) => const ProductListPage(),
+        '/rental-requests': (context) => const RentalRequestsPage(),
+        '/inbox': (context) => const InboxPage(),
+        '/profile_settings': (context) => const ProfileSettingsPage(),
       },
     );
   }

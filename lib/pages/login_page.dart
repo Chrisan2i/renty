@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'landing_page.dart';
+import 'package:renty/pages/landing_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'sign_up.dart';
+import 'sign_up_page.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'my_profile.dart';
-import 'navbar.dart';
-import 'footer.dart';
+import 'package:renty/landing/my_profile.dart';
+import 'package:renty/widgets/navbar.dart';
+import 'package:renty/widgets/footer.dart';
 
 class MyProfilePage extends StatelessWidget {
   const MyProfilePage({super.key});
@@ -18,13 +18,17 @@ class MyProfilePage extends StatelessWidget {
 
         final user = snapshot.data;
         if (user == null) {
-          return const Center(child: Text('Please sign in to view your profile'));
+          // Redirigir automáticamente al landing
+          Future.microtask(() {
+            Navigator.pushReplacementNamed(context, '/landing');
+          });
+          return const SizedBox(); // Retornar un widget vacío mientras se redirige
         }
 
         return Scaffold(
           body: ListView(
             children: [
-              Navbar(email: user.email ?? 'Guest'),
+              Navbar(email: user.email ?? 'Invitado'),
               MyProfile(user: user),
               const FooterSection(),
             ],
@@ -34,3 +38,4 @@ class MyProfilePage extends StatelessWidget {
     );
   }
 }
+
