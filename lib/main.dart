@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:renty/pages/search_page.dart';
 import 'package:renty/pages/my_profile_page.dart';
 import 'package:renty/pages/my_rentals_page.dart';
 import 'pages/landing_page.dart';
@@ -12,6 +13,8 @@ import 'package:renty/pages/product_list_page.dart';
 import 'package:renty/pages/rental_requests_page.dart';
 import 'package:renty/pages/inbox_page.dart';
 import 'package:renty/pages/profile_settings_page.dart';
+import 'package:renty/pages/add_product_page.dart';
+
 
 
 
@@ -55,11 +58,11 @@ class RentyApp extends StatelessWidget {
       ),
       initialRoute: '/landing',
       routes: {
-        '/landing': (context) => const LandingPage(), // sin login
+        '/landing': (context) => const LandingPage(),
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignUpScreen(),
         '/profile': (context) => const MyProfilePage(),
-        '/home': (context) => const LandingPage(),
+        '/search': (context) => const SearchPage(),
         '/myrentals': (context) => const MyRentalsPage(),
         '/add-product': (context) => const AddProductPage(),
         '/product-list': (context) => const ProductListPage(),
@@ -69,5 +72,4 @@ class RentyApp extends StatelessWidget {
       },
     );
   }
-
 }

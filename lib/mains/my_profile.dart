@@ -1,120 +1,110 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
+import '../models/user_model.dart';
 
 class MyProfile extends StatelessWidget {
-  final User user;
-  const MyProfile({super.key, required this.user});
+  final UserModel user;
+  final VoidCallback onEditProfile;
+  final VoidCallback onVerifyAccount;
+  final VoidCallback onAddProduct;
+
+  const MyProfile({
+    Key? key,
+    required this.user,
+    required this.onEditProfile,
+    required this.onVerifyAccount,
+    required this.onAddProduct,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final displayName = user.displayName ?? user.email?.split('@').first ?? 'Usuario';
-    final email = user.email ?? '';
-    final uid = user.uid;
+    final memberSince = DateFormat('MMMM yyyy').format(user.createdAt);
+    final city = user.address['city'] ?? '';
+    final state = user.address['state'] ?? '';
+    final location = [city, state].where((s) => s.isNotEmpty).join(', ');
+    final bio = (user.preferences['bio'] as String?) ?? '';
 
-    return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 1100),
-        margin: const EdgeInsets.all(24),
-        padding: const EdgeInsets.all(32),
-        decoration: BoxDecoration(
-          color: const Color(0xFF111111),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white12, width: 1),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // FOTO + INFO
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: ShapeDecoration(
-                    image: const DecorationImage(
-                      image: NetworkImage("https://placehold.co/120x120"),
-                      fit: BoxFit.contain,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      side: const BorderSide(width: 3, color: Color(0xFF0085FF)),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                  ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Cabecera
+        Container(
+          margin: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            children: [
+              CircleAvatar(
+                radius: 48,
+                backgroundColor: Colors.blueGrey,
+                child: Text(
+                  user.fullName.isNotEmpty ? user.fullName[0] : '?',
+                  style: const TextStyle(fontSize: 32, color: Colors.white),
                 ),
-                const SizedBox(width: 24),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        displayName,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: const [
-                          Icon(Icons.star, size: 16, color: Color(0xFF0085FF)),
-                          SizedBox(width: 4),
-                          Text('4.9', style: TextStyle(color: Colors.white, fontSize: 14)),
-                          SizedBox(width: 6),
-                          Text('(124 reviews)', style: TextStyle(color: Color(0xFF999999), fontSize: 14)),
-                          SizedBox(width: 6),
-                          Text('Miembro desde marzo 2022', style: TextStyle(color: Color(0xFF999999), fontSize: 14)),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'San Francisco, CA',
-                        style: const TextStyle(color: Color(0xFF999999), fontSize: 14),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Apasionado por compartir herramientas útiles con mi comunidad.',
-                        style: TextStyle(color: Color(0xFF999999), fontSize: 14),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0085FF),
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                            ),
-                            child: const Text('Editar Perfil'),
-                          ),
-                          const SizedBox(width: 12),
-                          OutlinedButton(
-                            onPressed: () {},
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Colors.white24),
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                            ),
-                            child: const Text('Verificar Cuenta', style: TextStyle(color: Colors.white)),
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                user.fullName,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text('@${user.username}',
+                  style: const TextStyle(
+                      color: Colors.white70, fontStyle: FontStyle.italic)),
+              const SizedBox(height: 8),
+              Text('Member since $memberSince',
+                  style: const TextStyle(
+                      color: Colors.white60, fontSize: 12)),
+              if (location.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(location,
+                    style: const TextStyle(
+                        color: Colors.white60, fontSize: 12)),
+              ],
+              if (bio.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(bio,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.white70)),
                 ),
               ],
-            ),
-            const SizedBox(height: 24),
-            const Divider(color: Colors.white12),
-            const SizedBox(height: 12),
-            Text(
-              'UID: $uid',
-              style: const TextStyle(color: Colors.white38, fontSize: 12),
-            ),
-          ],
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                      onPressed: onEditProfile,
+                      child: const Text('Edit Profile')),
+                  const SizedBox(width: 8),
+                  OutlinedButton(
+                      onPressed: onVerifyAccount,
+                      style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.white70)),
+                      child: const Text('Verify Account',
+                          style: TextStyle(color: Colors.white70))),
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
+
+        // Add Product Button
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: ElevatedButton.icon(
+            onPressed: onAddProduct,
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('Add Product'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              minimumSize: const Size.fromHeight(40),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
-

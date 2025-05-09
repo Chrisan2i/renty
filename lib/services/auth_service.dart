@@ -6,21 +6,21 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+  /// Registro con email/password y crea el documento en Firestore
   Future<UserCredential> registerWithEmail({
     required String fullName,
     required String username,
     required String email,
     required String password,
   }) async {
-    UserCredential result = await _auth.createUserWithEmailAndPassword(
+    final result = await _auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
-
     final user = result.user!;
     final now = DateTime.now();
 
-    UserModel userModel = UserModel(
+    final userModel = UserModel(
       userId: user.uid,
       fullName: fullName,
       username: username,
@@ -72,5 +72,28 @@ class AuthService {
 
     await _db.collection('users').doc(user.uid).set(userModel.toJson());
     return result;
+  }
+
+  /// Actualiza la fecha de último login
+  Future<void> updateLastLogin(String uid) async {
+    await _db
+        .collection('users')
+        .doc(uid)
+        .update({'lastLoginAt': DateTime.now().toIso8601String()});
+  }
+
+  /// Obtiene el UserModel una sola vez
+  Future<UserModel> getUserModelOnce(String uid) async {
+    final doc = await _db.collection('users').doc(uid).get();
+    return UserModel.fromDocument(doc);
+  }
+
+  /// Stream para escuchar cambios en el documento de usuario
+  Stream<UserModel> userStream(String uid) {
+    return _db
+        .collection('users')
+        .doc(uid)
+        .snapshots()
+        .map((doc) => UserModel.fromDocument(doc));
   }
 }

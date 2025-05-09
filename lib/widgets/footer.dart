@@ -21,7 +21,17 @@ class FooterSection extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.network('https://placehold.co/120x40', width: 120),
+                  // Después (el mismo placeholder pero en .png):
+                  Image.network(
+                    'https://placehold.co/120x40.png',
+                    width: 120,
+                    // opcional: fallback si algo falla
+                    errorBuilder: (context, error, stack) => const Icon(
+                      Icons.broken_image,
+                      color: Colors.white54,
+                      size: 120,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   SizedBox(
                     width: 180,

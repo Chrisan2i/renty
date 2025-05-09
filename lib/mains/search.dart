@@ -1,793 +1,229 @@
 import 'package:flutter/material.dart';
-import 'package:renty/pages/product_page.dart';
+import 'package:renty/models/product_model.dart';
+import 'package:renty/services/product_service.dart';
+import 'package:renty/widgets/product_card.dart';
 
-void main() {
-  runApp(const FigmaToCodeApp());
-}
-
-class FigmaToCodeApp extends StatelessWidget {
-  const FigmaToCodeApp({super.key});
+class Search extends StatefulWidget {
+  const Search({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color.fromARGB(255, 18, 32, 47),
-      ),
-      home: Scaffold(
-        body: ListView(children: [
-          Search(),
-        ]),
-      ),
-    );
-  }
+  _SearchState createState() => _SearchState();
 }
 
-class Search extends StatelessWidget {
+class _SearchState extends State<Search> {
+  String _searchQuery = '';
+  List<String> _selectedCategories = [];
+
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 1271,
-          height: 892, // Reduje la altura total eliminando el espacio de la barra
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(color: Colors.white),
-          child: Stack(
-            children: [
-              Positioned(
-                left: 0,
-                top: 0,
-                child: Container(
-                  width: 1272,
-                  height: 892, // Ajusté la altura
-                  decoration: BoxDecoration(color: const Color(0xFF111111)),
-                ),
-              ),
-              Positioned(
-                left: 72,
-                top: 48, // Ajusté la posición vertical (original: 147)
-                child: Container(
-                  width: 1016,
-                  height: 58,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF222222),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: Colors.white.withValues(alpha: 26),
+        // ─── Barra de búsqueda ─────────────────────────────────────────
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Material(
+              elevation: 4,
+              borderRadius: BorderRadius.circular(8),
+              color: const Color(0xFF222222),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        onChanged: (v) => setState(() => _searchQuery = v),
+                        decoration: InputDecoration(
+                          hintText: 'Search for anything to rent...',
+                          hintStyle: const TextStyle(color: Color(0xFF888888)),
+                          prefixIcon: const Icon(Icons.search, color: Color(0xFF888888)),
+                          filled: true,
+                          fillColor: const Color(0xFF333333),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        style: const TextStyle(color: Colors.white),
                       ),
-                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1047,
-                top: 65, // Ajusté la posición vertical (original: 164)
-                child: Text(
-                  '🔍',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1103,
-                top: 48, // Ajusté la posición vertical (original: 147)
-                child: Container(
-                  width: 96,
-                  height: 58,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF222222),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: Colors.white.withValues(alpha: 26),
+                    const SizedBox(width: 8),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.filter_list, size: 20),
+                      label: const Text('Filters'),
+                      onPressed: () => _openFilterSheet(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0085FF),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       ),
-                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ),
+                  ],
                 ),
               ),
-              Positioned(
-                left: 1128,
-                top: 65, // Ajusté la posición vertical (original: 164)
-                child: Text(
-                  'Filters',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 72,
-                top: 154, // Ajusté la posición vertical (original: 253)
-                child: Container(
-                  width: 360,
-                  height: 357,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF222222),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: Colors.white.withValues(alpha: 26),
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 73,
-                top: 155, // Ajusté la posición vertical (original: 254)
-                child: Container(
-                  width: 358,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage("https://placehold.co/358x200"),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 97,
-                top: 379, // Ajusté la posición vertical (original: 478)
-                child: Text(
-                  'Power Drill',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 97,
-                top: 409, // Ajusté la posición vertical (original: 508)
-                child: Text(
-                  'Brooklyn, NY',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 363,
-                top: 379, // Ajusté la posición vertical (original: 478)
-                child: Text(
-                  '★',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 383,
-                top: 379, // Ajusté la posición vertical (original: 478)
-                child: Text(
-                  '4.8',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 97,
-                top: 448, // Ajusté la posición vertical (original: 547)
-                child: Text(
-                  '\$25/day',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 24,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 302,
-                top: 446, // Ajusté la posición vertical (original: 545)
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const ProductPage()),
-                    );
-                  },
-                  child: Container(
-                    width: 105,
-                    height: 40,
-                    decoration: ShapeDecoration(
-                      color: const Color(0xFF0085FF),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 320,
-                top: 450, // Ajusté la posición vertical (original: 553)
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const ProductPage()),
-                    );
-                  },
-                  child: Text(
-                    'Rent Now',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w700,
-                      height: 1.50,
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 456,
-                top: 154, // Ajusté la posición vertical (original: 253)
-                child: Container(
-                  width: 360,
-                  height: 357,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF222222),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: Colors.white.withValues(alpha: 26),
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 457,
-                top: 155, // Ajusté la posición vertical (original: 254)
-                child: Container(
-                  width: 358,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage("https://placehold.co/358x200"),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 481,
-                top: 379, // Ajusté la posición vertical (original: 478)
-                child: Text(
-                  'Mountain Bike',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 481,
-                top: 409, // Ajusté la posición vertical (original: 508)
-                child: Text(
-                  'Manhattan, NY',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 747,
-                top: 379, // Ajusté la posición vertical (original: 478)
-                child: Text(
-                  '★',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 767,
-                top: 379, // Ajusté la posición vertical (original: 478)
-                child: Text(
-                  '4.9',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 481,
-                top: 448, // Ajusté la posición vertical (original: 547)
-                child: Text(
-                  '\$45/day',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 24,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 686,
-                top: 446, // Ajusté la posición vertical (original: 545)
-                child: Container(
-                  width: 105,
-                  height: 40,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF0085FF),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 702,
-                top: 454, // Ajusté la posición vertical (original: 553)
-                child: Text(
-                  'Rent Now',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 840,
-                top: 154, // Ajusté la posición vertical (original: 253)
-                child: Container(
-                  width: 360,
-                  height: 357,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF222222),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: Colors.white.withValues(alpha: 26),
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 841,
-                top: 155, // Ajusté la posición vertical (original: 254)
-                child: Container(
-                  width: 358,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage("https://placehold.co/358x200"),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 865,
-                top: 379, // Ajusté la posición vertical (original: 478)
-                child: Text(
-                  'Moving Van',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 865,
-                top: 409, // Ajusté la posición vertical (original: 508)
-                child: Text(
-                  'Queens, NY',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1132,
-                top: 379, // Ajusté la posición vertical (original: 478)
-                child: Text(
-                  '★',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1152,
-                top: 379, // Ajusté la posición vertical (original: 478)
-                child: Text(
-                  '4.7',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 865,
-                top: 448, // Ajusté la posición vertical (original: 547)
-                child: Text(
-                  '\$89/day',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 24,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1070,
-                top: 446, // Ajusté la posición vertical (original: 545)
-                child: Container(
-                  width: 105,
-                  height: 40,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF0085FF),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1086,
-                top: 454, // Ajusté la posición vertical (original: 553)
-                child: Text(
-                  'Rent Now',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 72,
-                top: 535, // Ajusté la posición vertical (original: 634)
-                child: Container(
-                  width: 360,
-                  height: 357,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF222222),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: Colors.white.withValues(alpha: 26),
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 73,
-                top: 536, // Ajusté la posición vertical (original: 635)
-                child: Container(
-                  width: 358,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage("https://placehold.co/358x200"),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 97,
-                top: 760, // Ajusté la posición vertical (original: 859)
-                child: Text(
-                  'DSLR Camera',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 97,
-                top: 790, // Ajusté la posición vertical (original: 889)
-                child: Text(
-                  'Staten Island, NY',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 363,
-                top: 760, // Ajusté la posición vertical (original: 859)
-                child: Text(
-                  '★',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 383,
-                top: 760, // Ajusté la posición vertical (original: 859)
-                child: Text(
-                  '4.9',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 97,
-                top: 829, // Ajusté la posición vertical (original: 928)
-                child: Text(
-                  '\$55/day',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 24,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 302,
-                top: 827, // Ajusté la posición vertical (original: 926)
-                child: Container(
-                  width: 105,
-                  height: 40,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF0085FF),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 318,
-                top: 835, // Ajusté la posición vertical (original: 934)
-                child: Text(
-                  'Rent Now',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 456,
-                top: 535, // Ajusté la posición vertical (original: 634)
-                child: Container(
-                  width: 360,
-                  height: 357,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF222222),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: Colors.white.withValues(alpha: 26),
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 457,
-                top: 536, // Ajusté la posición vertical (original: 635)
-                child: Container(
-                  width: 358,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage("https://placehold.co/358x200"),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 481,
-                top: 760, // Ajusté la posición vertical (original: 859)
-                child: Text(
-                  'Lawn Mower',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 481,
-                top: 790, // Ajusté la posición vertical (original: 889)
-                child: Text(
-                  'Bronx, NY',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 747,
-                top: 760, // Ajusté la posición vertical (original: 859)
-                child: Text(
-                  '★',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 767,
-                top: 760, // Ajusté la posición vertical (original: 859)
-                child: Text(
-                  '4.6',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 481,
-                top: 829, // Ajusté la posición vertical (original: 928)
-                child: Text(
-                  '\$35/day',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 24,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 686,
-                top: 827, // Ajusté la posición vertical (original: 926)
-                child: Container(
-                  width: 105,
-                  height: 40,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF0085FF),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 702,
-                top: 835, // Ajusté la posición vertical (original: 934)
-                child: Text(
-                  'Rent Now',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 96,
-                top: 64, // Ajusté la posición vertical (original: 163)
-                child: Text(
-                  'Search for anything to rent...',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
+        ),
+
+        const SizedBox(height: 16),
+        // ─── Listado de productos ────────────────────────────────────────
+        StreamBuilder<List<ProductModel>>(
+          stream: ProductService().getAllProductsStream(),
+          builder: (context, snap) {
+            if (snap.hasError) {
+              return const Center(child: Text('Something went wrong', style: TextStyle(color: Colors.red)));
+            }
+            if (!snap.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            final products = snap.data!;
+            final filtered = products.where((p) {
+              final matchQuery = p.title.toLowerCase().contains(_searchQuery.toLowerCase());
+              final matchCat = _selectedCategories.isEmpty || _selectedCategories.contains(p.category);
+              return matchQuery && matchCat;
+            }).toList();
+
+            return Column(
+              children: [
+                // Contador de resultados
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    '${filtered.length} products found',
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                ),
+
+                // Rejilla de productos
+                if (filtered.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40),
+                    child: Text('No products found.', style: TextStyle(color: Colors.white, fontSize: 18)),
+                  )
+                else
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1200),
+                      child: GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: MediaQuery.of(context).size.width > 800 ? 3 : 2,
+                          mainAxisSpacing: 20,
+                          crossAxisSpacing: 20,
+                          childAspectRatio: 0.7,
+                        ),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, i) => ProductCard(product: filtered[i]),
+                      ),
+                    ),
+                  ),
+
+                const SizedBox(height: 40),
+              ],
+            );
+          },
         ),
       ],
     );
   }
+
+  void _openFilterSheet(BuildContext context) {
+    // Recupera la última lista cacheada
+    final products = ProductService().lastFetchedProducts;
+
+    // Calcula el count por categoría
+    final catCounts = <String, int>{};
+    for (var p in products) {
+      catCounts[p.category] = (catCounts[p.category] ?? 0) + 1;
+    }
+    final categories = catCounts.keys.toList()..sort();
+
+    String localSearch = '';
+    List<String> tempSelected = List.of(_selectedCategories);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF222222),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(12))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          // Filtra chips por búsqueda interna
+          final filteredCats = categories
+              .where((c) => c.toLowerCase().contains(localSearch.toLowerCase()))
+              .toList();
+
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Select categories', style: TextStyle(color: Colors.white, fontSize: 18)),
+                const SizedBox(height: 8),
+                // Buscador interno de categorías
+                TextField(
+                  onChanged: (v) => setModalState(() => localSearch = v),
+                  decoration: InputDecoration(
+                    hintText: 'Search categories...',
+                    hintStyle: const TextStyle(color: Color(0xFF888888)),
+                    prefixIcon: const Icon(Icons.search, color: Color(0xFF888888)),
+                    filled: true,
+                    fillColor: const Color(0xFF333333),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                  ),
+                  style: const TextStyle(color: Colors.white),
+                ),
+                const SizedBox(height: 12),
+                // Chips dinámicos con count
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: filteredCats.map((cat) {
+                    return FilterChip(
+                      label: Text('$cat (${catCounts[cat]})', style: const TextStyle(color: Colors.white)),
+                      selected: tempSelected.contains(cat),
+                      onSelected: (sel) => setModalState(() {
+                        sel ? tempSelected.add(cat) : tempSelected.remove(cat);
+                      }),
+                      selectedColor: const Color(0xFF005BB5),
+                      backgroundColor: const Color(0xFF333333),
+                      checkmarkColor: Colors.white,
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+                // Acciones Clear / Apply
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        setState(() => _selectedCategories.clear());
+                        Navigator.pop(ctx);
+                      },
+                      child: const Text('Clear All', style: TextStyle(color: Colors.white70)),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() => _selectedCategories = tempSelected);
+                        Navigator.pop(ctx);
+                      },
+                      child: const Text('Apply Filters'),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
 }
+

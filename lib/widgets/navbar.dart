@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:renty/mains/my_profile.dart';
-import 'package:renty/pages/login_page.dart';
-import 'package:renty/pages/sign_up_page.dart';
 import 'package:renty/pages/search_page.dart';
 import '../pages/landing_page.dart';
 import 'package:renty/pages/profile_settings_page.dart';
@@ -35,8 +32,7 @@ class Navbar extends StatelessWidget {
                 'assets/logo.png',
                 height: 40,
               ),
-
-              // Nav items + buttons
+    // Nav items + buttons
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -47,10 +43,7 @@ class Navbar extends StatelessWidget {
                     );
                   }),
                   _navButton('Category', () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const SearchPage()),
-                    );
+                    Navigator.pushReplacementNamed(context, '/search');
                   }),
                   _navItem('How It Works'),
                   _navItem('About'),
