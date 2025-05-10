@@ -1,43 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:renty/pages/search_page.dart';
-import 'package:renty/pages/my_profile_page.dart';
-import 'package:renty/pages/my_rentals_page.dart';
-import 'pages/landing_page.dart';
-import 'package:renty/pages/login_page.dart';
-import 'package:renty/pages/sign_up_page.dart';
-import 'package:renty/pages/add_product_page.dart';
-import 'package:renty/pages/product_list_page.dart';
-import 'package:renty/pages/rental_requests_page.dart';
-import 'package:renty/pages/inbox_page.dart';
-import 'package:renty/pages/profile_settings_page.dart';
-import 'package:renty/pages/add_product_page.dart';
-
-
+import 'package:renty/features/products/views/search_page.dart';
+import 'package:renty/features/profile/views/my_profile_page.dart';
+import 'package:renty/features/rentals/views/my_rentals_page.dart';
+import 'features/landing/views/landing_page.dart';
+import 'package:renty/features/auth/views/login_page.dart';
+import 'package:renty/features/auth/views/sign_up_page.dart';
+import 'package:renty/features/products/views/add_product_page.dart';
+import 'package:renty/features/products/views/product_list_page.dart';
+import 'package:renty/features/rentals/views/rental_requests_page.dart';
+import 'package:renty/features/chat/views/inbox_page.dart';
+import 'package:renty/features/profile/views/profile_settings_page.dart';
+import 'package:renty/firebase_options.dart';
 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  if (kIsWeb) {
-    // Inicializacion para Web
-    await Firebase.initializeApp(
-      options: const FirebaseOptions(
-        apiKey: "AIzaSyD8tWm3W_SYVHyWSJH3u7CMHXltW_J3c2Y",
-        authDomain: "renty-a5491.firebaseapp.com",
-        projectId: "renty-a5491",
-        storageBucket: "renty-a5491.firebasestorage.app",
-        messagingSenderId: "870870389735",
-        appId: "1:870870389735:web:ac64b53c0ce5f3757ba342",
-      ),
-    );
-  } else {
-    //Inicializacion para Android (usa google-services.json)
-    await Firebase.initializeApp();
-  }
-
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const RentyApp());
 }
 
