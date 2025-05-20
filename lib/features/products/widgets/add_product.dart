@@ -74,7 +74,7 @@ class _AddProductState extends State<AddProduct> {
       description: _descCtrl.text.trim(),
       category: _selectedCategory,
       pricePerDay: double.tryParse(_priceCtrl.text) ?? 0,
-      images: [], // Luego puedes subir a Storage y llenar URLs
+      images: [],
       isAvailable: true,
       rating: 0,
       totalReviews: 0,
@@ -84,7 +84,6 @@ class _AddProductState extends State<AddProduct> {
     );
 
     try {
-      // Subir imágenes primero si deseas
       await ProductService().addProduct(product);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Producto publicado exitosamente')),
@@ -101,7 +100,7 @@ class _AddProductState extends State<AddProduct> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return Padding(
       padding: const EdgeInsets.all(24),
       child: Form(
         key: _formKey,
@@ -251,6 +250,7 @@ class _AddProductState extends State<AddProduct> {
                   : const Text('Publicar producto',
                   style: TextStyle(fontWeight: FontWeight.bold)),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),

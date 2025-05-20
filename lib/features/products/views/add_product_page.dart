@@ -29,20 +29,19 @@ class AddProductPage extends StatelessWidget {
         child: Navbar(email: fbUser.email ?? ''),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Contenido centrado y limitado a 800px
-            Expanded(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 800),
-                  child: const AddProduct(),
-                ),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Contenido centrado y limitado a 800px
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 800),
+                child: const AddProduct(),
               ),
-            ),
-            // Footer full width
-            const FooterSection(),
-          ],
+              // Footer al final del contenido desplazable
+              const SizedBox(height: 24), // Espacio adicional
+              const FooterSection(),
+            ],
+          ),
         ),
       ),
     );
