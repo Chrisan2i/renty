@@ -1,14 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:renty/features/products/models/product_model.dart';
 
+// Placeholder page for product details (replace with your actual page later)
+class ProductDetailsPage extends StatelessWidget {
+  final ProductModel product;
+
+  const ProductDetailsPage({Key? key, required this.product}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(product.title),
+        backgroundColor: const Color(0xFF222222),
+      ),
+      body: Container(
+        color: const Color(0xFF222222),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Product: ${product.title}',
+                style: const TextStyle(color: Colors.white, fontSize: 24),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Price: \$${product.pricePerDay.toStringAsFixed(0)}/day',
+                style: const TextStyle(color: Colors.white, fontSize: 18),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'This is a placeholder page. Replace with your actual details page.',
+                style: TextStyle(color: Colors.white70),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class ProductCard extends StatelessWidget {
   final ProductModel product;
   const ProductCard({Key? key, required this.product}) : super(key: key);
 
+  void _navigateToDetails(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProductDetailsPage(product: product),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final imageUrl =
-    product.images.isNotEmpty ? product.images.first : 'https://placehold.co/400x300';
+    final imageUrl = product.images.isNotEmpty
+        ? product.images.first
+        : 'https://placehold.co/400x300';
     final city = product.location['city'] ?? '';
     final state = product.location['state'] ?? '';
     return Container(
@@ -20,19 +71,22 @@ class ProductCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Imagen
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: Image.network(
-              imageUrl,
-              height: 140,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Image.network(
-                'https://placehold.co/400x300',
+          // Imagen (con navegación)
+          GestureDetector(
+            onTap: () => _navigateToDetails(context),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              child: Image.network(
+                imageUrl,
                 height: 140,
                 width: double.infinity,
                 fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Image.network(
+                  'https://placehold.co/400x300',
+                  height: 140,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
@@ -53,12 +107,16 @@ class ProductCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  product.title,
-                  style: const TextStyle(
+                GestureDetector(
+                  onTap: () => _navigateToDetails(context),
+                  child: Text(
+                    product.title,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
-                      fontWeight: FontWeight.bold),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -69,19 +127,24 @@ class ProductCard extends StatelessWidget {
                 Text(
                   '\$${product.pricePerDay.toStringAsFixed(0)}/day',
                   style: const TextStyle(
-                      color: Color(0xFF0085FF),
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold),
+                    color: Color(0xFF0085FF),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0085FF),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4)),
+                    onPressed: () => _navigateToDetails(context),
+                    style: ButtonStyle(
+                      backgroundColor:
+                      MaterialStateProperty.all(const Color(0xFF0085FF)),
+                      shape: MaterialStateProperty.all(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
                     ),
                     child: const Text('Rent Now'),
                   ),

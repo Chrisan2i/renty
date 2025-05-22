@@ -5,8 +5,6 @@ import 'package:renty/features/rentals/widgets/my_rentals.dart';
 import 'package:renty/core/widgets/navbar.dart';
 import 'package:renty/core/widgets/footer.dart';
 
-
-
 class MyRentalsPage extends StatelessWidget {
   const MyRentalsPage({super.key});
 

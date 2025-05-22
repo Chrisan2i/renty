@@ -4,7 +4,6 @@ import 'package:renty/features/products/widgets/search.dart';
 import 'package:renty/core/widgets/navbar.dart';
 import 'package:renty/core/widgets/footer.dart';
 
-
 class SearchPage extends StatelessWidget {
   const SearchPage({super.key});
 

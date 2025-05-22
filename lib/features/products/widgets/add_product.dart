@@ -1,9 +1,13 @@
-import 'dart:typed_data';
+import 'dart:io';
+import 'dart:convert';
+import 'dart:typed_data'; // Added import for Uint8List
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:renty/features/products/models/product_model.dart';
 import 'package:renty/features/products/services/product_service.dart';
+import 'package:http/http.dart' as http;
 
 class AddProduct extends StatefulWidget {
   const AddProduct({Key? key}) : super(key: key);
@@ -47,6 +51,53 @@ class _AddProductState extends State<AddProduct> {
     }
   }
 
+  Future<List<String>> _uploadImagesToCloudinary() async {
+    const cloudName = 'dmjwqsx8l'; // Your Cloudinary cloud name
+    const uploadPreset = 'unsigned_renty'; // Your Cloudinary upload preset
+    final url = Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/upload');
+    List<String> imageUrls = [];
+
+    for (var image in _images) {
+      try {
+        var request = http.MultipartRequest('POST', url);
+        request.fields['upload_preset'] = uploadPreset;
+
+        if (kIsWeb) {
+          // For Web
+          final bytes = await image.readAsBytes();
+          final multipartFile = http.MultipartFile.fromBytes(
+            'file',
+            bytes,
+            filename: image.name,
+          );
+          request.files.add(multipartFile);
+        } else {
+          // For Mobile
+          final multipartFile = await http.MultipartFile.fromPath(
+            'file',
+            image.path,
+          );
+          request.files.add(multipartFile);
+        }
+
+        final response = await request.send();
+        final responseData = await response.stream.bytesToString();
+        final data = json.decode(responseData);
+
+        if (response.statusCode == 200) {
+          imageUrls.add(data['secure_url']);
+        } else {
+          debugPrint('Error al subir la imagen: $responseData');
+          throw Exception('Failed to upload image: ${image.name}');
+        }
+      } catch (e) {
+        debugPrint('Excepción en subida: $e');
+        throw Exception('Error uploading image: ${image.name}');
+      }
+    }
+    return imageUrls;
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_images.isEmpty) {
@@ -66,24 +117,27 @@ class _AddProductState extends State<AddProduct> {
       return;
     }
 
-    final now = DateTime.now();
-    final product = ProductModel(
-      productId: '',
-      ownerId: user.uid,
-      title: _titleCtrl.text.trim(),
-      description: _descCtrl.text.trim(),
-      category: _selectedCategory,
-      pricePerDay: double.tryParse(_priceCtrl.text) ?? 0,
-      images: [],
-      isAvailable: true,
-      rating: 0,
-      totalReviews: 0,
-      createdAt: now,
-      updatedAt: now,
-      location: {'city': '', 'state': '', 'country': '', 'latitude': null, 'longitude': null},
-    );
-
     try {
+      // Upload images to Cloudinary
+      final imageUrls = await _uploadImagesToCloudinary();
+
+      final now = DateTime.now();
+      final product = ProductModel(
+        productId: '',
+        ownerId: user.uid,
+        title: _titleCtrl.text.trim(),
+        description: _descCtrl.text.trim(),
+        category: _selectedCategory,
+        pricePerDay: double.tryParse(_priceCtrl.text) ?? 0,
+        images: imageUrls, // Store Cloudinary URLs
+        isAvailable: true,
+        rating: 0,
+        totalReviews: 0,
+        createdAt: now,
+        updatedAt: now,
+        location: {'city': '', 'state': '', 'country': '', 'latitude': null, 'longitude': null},
+      );
+
       await ProductService().addProduct(product);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Producto publicado exitosamente')),
@@ -107,7 +161,7 @@ class _AddProductState extends State<AddProduct> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Selección de imágenes
+            // Image selection
             GestureDetector(
               onTap: _pickImages,
               child: Container(
@@ -160,7 +214,7 @@ class _AddProductState extends State<AddProduct> {
             ),
             const SizedBox(height: 24),
 
-            // Título
+            // Title
             TextFormField(
               controller: _titleCtrl,
               decoration: const InputDecoration(
@@ -174,7 +228,7 @@ class _AddProductState extends State<AddProduct> {
             ),
             const SizedBox(height: 16),
 
-            // Descripción
+            // Description
             TextFormField(
               controller: _descCtrl,
               decoration: const InputDecoration(
@@ -189,7 +243,7 @@ class _AddProductState extends State<AddProduct> {
             ),
             const SizedBox(height: 16),
 
-            // Precio y categoría
+            // Price and category
             Row(
               children: [
                 Expanded(
@@ -231,7 +285,7 @@ class _AddProductState extends State<AddProduct> {
             ),
             const SizedBox(height: 24),
 
-            // Botón Publicar
+            // Submit button
             ElevatedButton(
               onPressed: _isSubmitting ? null : _submit,
               style: ElevatedButton.styleFrom(
