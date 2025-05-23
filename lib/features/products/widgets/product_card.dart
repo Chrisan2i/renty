@@ -1,58 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:renty/features/products/models/product_model.dart';
+import 'package:renty/features/products/views/product_page.dart';
 
-// Placeholder page for product details (replace with your actual page later)
-class ProductDetailsPage extends StatelessWidget {
-  final ProductModel product;
-
-  const ProductDetailsPage({Key? key, required this.product}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(product.title),
-        backgroundColor: const Color(0xFF222222),
-      ),
-      body: Container(
-        color: const Color(0xFF222222),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Product: ${product.title}',
-                style: const TextStyle(color: Colors.white, fontSize: 24),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Price: \$${product.pricePerDay.toStringAsFixed(0)}/day',
-                style: const TextStyle(color: Colors.white, fontSize: 18),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'This is a placeholder page. Replace with your actual details page.',
-                style: TextStyle(color: Colors.white70),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+import 'package:renty/features/products/widgets/product.dart';
 
 class ProductCard extends StatelessWidget {
   final ProductModel product;
   const ProductCard({Key? key, required this.product}) : super(key: key);
 
   void _navigateToDetails(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ProductDetailsPage(product: product),
-      ),
-    );
+    try {
+      debugPrint('Navigating to ProductPage with product: ${product.title} (ID: ${product.productId})');
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => Product(product: product),
+        ),
+      ).then((_) => debugPrint('Navigation to ProductPage completed'));
+    } catch (e, stackTrace) {
+      debugPrint('Navigation error: $e\n$stackTrace');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error navigating to product page: $e')),
+      );
+    }
   }
 
   @override
@@ -71,7 +40,6 @@ class ProductCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Imagen (con navegación)
           GestureDetector(
             onTap: () => _navigateToDetails(context),
             child: ClipRRect(
@@ -90,7 +58,6 @@ class ProductCard extends StatelessWidget {
               ),
             ),
           ),
-          // Detalles
           Padding(
             padding: const EdgeInsets.all(12),
             child: Column(

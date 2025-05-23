@@ -112,7 +112,4 @@ class ProductModel {
       location: Map<String, dynamic>.from(data['location'] ?? {}),
     );
   }
-
-
 }
-

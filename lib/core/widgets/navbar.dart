@@ -44,17 +44,16 @@ class Navbar extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _navButton('Home', () {
+                  _navButton('Inicio', () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const LandingPage()),
                     );
                   }),
-                  _navButton('Category', () {
+                  _navButton('Artículos', () {
                     Navigator.pushReplacementNamed(context, '/search');
                   }),
-                  _navItem('How It Works'),
-                  _navItem('About'),
+                  _navItem('Rentas'),
                   const SizedBox(width: 20),
                   if (user != null) ...[
                     const SizedBox(width: 10),
