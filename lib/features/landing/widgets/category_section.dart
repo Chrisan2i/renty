@@ -1,82 +1,117 @@
+// lib/features/landing/widgets/category_section.dart
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:renty/core/constant/category.dart';
+import 'package:renty/core/theme/app_colors.dart';
+import 'package:renty/core/theme/text_styles.dart';
+import 'package:renty/core/utils/app_layout.dart';
+import 'package:renty/core/utils/app_decorations.dart';
+import 'package:renty/features/categories/models/category_model.dart';
+import 'package:renty/features/categories/services/category_service.dart';
 
+/// Displays the “Popular Categories” section on the landing page.
+///
+/// - Loads categories from Firestore via [CategoryService].
+/// - Shows a loader while fetching, or an error message if it fails.
+/// - Renders each category with its name, description, optional image,
+///   and a tappable “Browse Category →” that navigates to `/search`.
+/// - Design, paddings, fonts and colors match the original static version exactly.
 class CategorySection extends StatelessWidget {
-  const CategorySection({super.key});
-
-  final List<Map<String, String>> categories = const [
-    {"title": "Tools"},
-    {"title": "Vehicles"},
-    {"title": "Electronics"},
-    {"title": "Sports Equipment"},
-    {"title": "Home & Garden"},
-    {"title": "Party Supplies"},
-  ];
+  const CategorySection({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // Section title, identical to original design
+    final header = Text(
+      kCategorySectionTitle,
+      textAlign: TextAlign.center,
+      style: AppTextStyles.categoryHeader,
+    );
+
     return Container(
-      color: const Color(0xFF222222),
-      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            'Popular Categories',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 36,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 32),
-          Wrap(
-            spacing: 24,
-            runSpacing: 24,
-            alignment: WrapAlignment.center,
-            children: categories.map((category) {
-              return Container(
-                width: 280,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF111111),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      category['title']!,
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
+      color: AppColors.backgroundGrey,
+      padding: AppLayout.sectionPadding,
+      child: FutureBuilder<List<CategoryModel>>(
+        future: CategoryService().getAllCategories(),
+        builder: (context, snapshot) {
+          Widget body;
+
+          if (snapshot.hasError) {
+            // Error state
+            body = Text(
+              'Error loading categories',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.categoryDesc.copyWith(color: Colors.red),
+            );
+          } else if (!snapshot.hasData) {
+            // Loading state
+            body = const Center(child: CircularProgressIndicator());
+          } else {
+            // Data loaded successfully
+            final categories = snapshot.data!;
+            body = Wrap(
+              spacing: AppLayout.spacingM,
+              runSpacing: AppLayout.spacingM,
+              alignment: WrapAlignment.center,
+              children: categories.map((cat) {
+                return Container(
+                  width: AppLayout.categoryCardWidth,
+                  padding: EdgeInsets.all(AppLayout.categoryCardPadding),
+                  decoration: AppDecorations.categoryCard,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Optional image at top of card
+                      if (cat.iconUrl != null && cat.iconUrl!.isNotEmpty) ...[
+                        Container(
+                          height: 120,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            image: DecorationImage(
+                              image: NetworkImage(cat.iconUrl!),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: AppLayout.spacingS),
+                      ],
+                      // Category title
+                      Text(cat.name, style: AppTextStyles.categoryTitle),
+                      const SizedBox(height: AppLayout.spacingS),
+                      // Category description
+                      Text(cat.description, style: AppTextStyles.categoryDesc),
+                      const SizedBox(height: AppLayout.spacingS),
+                      // Browse link
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            '/search',
+                            arguments: cat.slug,
+                          );
+                        },
+                        child: Text(
+                          kCategoryActionText,
+                          style: AppTextStyles.categoryAction,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Find the perfect rental in our extensive collection',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF999999),
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Browse Category →',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF0085FF),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-        ],
+                    ],
+                  ),
+                );
+              }).toList(),
+            );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              header,
+              const SizedBox(height: AppLayout.spacingL),
+              body,
+            ],
+          );
+        },
       ),
     );
   }

@@ -44,7 +44,14 @@ class RentyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignUpScreen(),
         '/profile': (context) => const MyProfilePage(),
-        '/search': (context) => const SearchPage(),
+        '/search': (c) {
+          // 1) Leemos de settings.arguments el slug (String)
+          final slug = ModalRoute.of(c)!.settings.arguments as String?;
+          // 2) Se lo pasamos al SearchPage
+          return SearchPage(
+            initialSelectedCategories: slug == null ? [] : [slug],
+          );
+        },
         '/myrentals': (context) => const MyRentalsPage(),
         '/add-product': (context) => const AddProductPage(),
         '/product-list': (context) => const ProductListPage(),

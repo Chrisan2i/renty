@@ -2,9 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:renty/features/products/models/product_model.dart';
 import 'package:renty/features/products/services/product_service.dart';
 import 'package:renty/features/products/widgets/product_card.dart';
+// Nuevos imports para manejar categorías
+import 'package:renty/features/categories/models/category_model.dart';
+import 'package:renty/features/categories/services/category_service.dart';
 
 class Search extends StatefulWidget {
-  const Search({Key? key}) : super(key: key);
+  final List<String> initialSelectedCategories;
+
+  const Search({
+    Key? key,
+    this.initialSelectedCategories = const [],
+  }) : super(key: key);
 
   @override
   _SearchState createState() => _SearchState();
@@ -12,7 +20,22 @@ class Search extends StatefulWidget {
 
 class _SearchState extends State<Search> {
   String _searchQuery = '';
-  List<String> _selectedCategories = [];
+  late List<String> _selectedCategories;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedCategories = List.of(widget.initialSelectedCategories);
+  }
+
+  // Helper para convertir cualquier cadena a un slug consistente
+  String _slugify(String input) {
+    return input
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^\w]+'), '-')   // no alfanum → guión
+        .replaceAll(RegExp(r'(^-+|-+$)'), ''); // quita guiones inicio/final
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +51,8 @@ class _SearchState extends State<Search> {
               borderRadius: BorderRadius.circular(8),
               color: const Color(0xFF222222),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 child: Row(
                   children: [
                     Expanded(
@@ -36,11 +60,14 @@ class _SearchState extends State<Search> {
                         onChanged: (v) => setState(() => _searchQuery = v),
                         decoration: InputDecoration(
                           hintText: 'Search for anything to rent...',
-                          hintStyle: const TextStyle(color: Color(0xFF888888)),
-                          prefixIcon: const Icon(Icons.search, color: Color(0xFF888888)),
+                          hintStyle:
+                          const TextStyle(color: Color(0xFF888888)),
+                          prefixIcon: const Icon(Icons.search,
+                              color: Color(0xFF888888)),
                           filled: true,
                           fillColor: const Color(0xFF333333),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide.none,
@@ -50,15 +77,24 @@ class _SearchState extends State<Search> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.filter_list, size: 20),
-                      label: const Text('Filters'),
-                      onPressed: () => _openFilterSheet(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0085FF),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      ),
+                    StreamBuilder<List<ProductModel>>(
+                      stream: ProductService().getAllProductsStream(),
+                      builder: (context, snap) {
+                        final products = snap.data ?? <ProductModel>[];
+                        return ElevatedButton.icon(
+                          icon: const Icon(Icons.filter_list, size: 20),
+                          label: const Text('Filters'),
+                          onPressed: () =>
+                              _openFilterSheet(context, products),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0085FF),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 14),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -73,18 +109,17 @@ class _SearchState extends State<Search> {
           stream: ProductService().getAllProductsStream(),
           builder: (context, snap) {
             if (snap.hasError) {
-              return const Center(child: Text('Something went wrong', style: TextStyle(color: Colors.red)));
+              return const Center(
+                child: Text('Something went wrong',
+                    style: TextStyle(color: Colors.red)),
+              );
             }
             if (!snap.hasData) {
               return const Center(child: CircularProgressIndicator());
             }
 
             final products = snap.data!;
-            final filtered = products.where((p) {
-              final matchQuery = p.title.toLowerCase().contains(_searchQuery.toLowerCase());
-              final matchCat = _selectedCategories.isEmpty || _selectedCategories.contains(p.category);
-              return matchQuery && matchCat;
-            }).toList();
+            final filtered = _applyFilters(products);
 
             return Column(
               children: [
@@ -101,7 +136,8 @@ class _SearchState extends State<Search> {
                 if (filtered.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 40),
-                    child: Text('No products found.', style: TextStyle(color: Colors.white, fontSize: 18)),
+                    child: Text('No products found.',
+                        style: TextStyle(color: Colors.white, fontSize: 18)),
                   )
                 else
                   Center(
@@ -110,15 +146,19 @@ class _SearchState extends State<Search> {
                       child: GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: MediaQuery.of(context).size.width > 800 ? 3 : 2,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        gridDelegate:
+                        SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount:
+                          MediaQuery.of(context).size.width > 800 ? 3 : 2,
                           mainAxisSpacing: 20,
                           crossAxisSpacing: 20,
                           childAspectRatio: 0.7,
                         ),
                         itemCount: filtered.length,
-                        itemBuilder: (context, i) => ProductCard(product: filtered[i]),
+                        itemBuilder: (context, i) =>
+                            ProductCard(product: filtered[i]),
                       ),
                     ),
                   ),
@@ -132,16 +172,54 @@ class _SearchState extends State<Search> {
     );
   }
 
-  void _openFilterSheet(BuildContext context) {
-    // Recupera la última lista cacheada
-    final products = ProductService().lastFetchedProducts;
+  /// Filtrado profesional: normalize, match texto y categoría (por slug), y ordena
+  List<ProductModel> _applyFilters(List<ProductModel> items) {
+    final query = _searchQuery.trim().toLowerCase();
+    final normalizedSelected =
+    _selectedCategories.map((c) => c.trim().toLowerCase()).toList();
 
-    // Calcula el count por categoría
-    final catCounts = <String, int>{};
-    for (var p in products) {
-      catCounts[p.category] = (catCounts[p.category] ?? 0) + 1;
+    List<ProductModel> result = items.where((p) {
+      final title = p.title.trim().toLowerCase();
+      final productSlug = _slugify(p.category);
+
+      final matchesText = query.isEmpty || title.contains(query);
+      final matchesCat =
+          normalizedSelected.isEmpty || normalizedSelected.contains(productSlug);
+
+      return matchesText && matchesCat;
+    }).toList();
+
+    if (normalizedSelected.isNotEmpty) {
+      result.sort((a, b) {
+        final aSlug = _slugify(a.category);
+        final bSlug = _slugify(b.category);
+        final aIn = normalizedSelected.contains(aSlug);
+        final bIn = normalizedSelected.contains(bSlug);
+        if (aIn && !bIn) return -1;
+        if (!aIn && bIn) return 1;
+        return a.title.compareTo(b.title);
+      });
+    } else {
+      result.sort((a, b) => a.title.compareTo(b.title));
     }
-    final categories = catCounts.keys.toList()..sort();
+
+    return result;
+  }
+
+  /// Abre el BottomSheet cargando las categorías desde la base de datos
+  Future<void> _openFilterSheet(
+      BuildContext context, List<ProductModel> products) async {
+    final categories = await CategoryService().getAllCategories();
+
+    // Contar cuántos productos hay por cada categoría (usando slugify)
+    final catCounts = <String, int>{};
+    for (final cat in categories) {
+      final count = products
+          .map((p) => _slugify(p.category))
+          .where((s) => s == cat.slug)
+          .length;
+      catCounts[cat.slug] = count;
+    }
 
     String localSearch = '';
     List<String> tempSelected = List.of(_selectedCategories);
@@ -149,12 +227,12 @@ class _SearchState extends State<Search> {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF222222),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(12))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(12))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) {
-          // Filtra chips por búsqueda interna
           final filteredCats = categories
-              .where((c) => c.toLowerCase().contains(localSearch.toLowerCase()))
+              .where((c) => c.name.toLowerCase().contains(localSearch))
               .toList();
 
           return Padding(
@@ -163,33 +241,39 @@ class _SearchState extends State<Search> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Select categories', style: TextStyle(color: Colors.white, fontSize: 18)),
+                const Text('Select categories',
+                    style: TextStyle(color: Colors.white, fontSize: 18)),
                 const SizedBox(height: 8),
-                // Buscador interno de categorías
                 TextField(
                   onChanged: (v) => setModalState(() => localSearch = v),
                   decoration: InputDecoration(
                     hintText: 'Search categories...',
                     hintStyle: const TextStyle(color: Color(0xFF888888)),
-                    prefixIcon: const Icon(Icons.search, color: Color(0xFF888888)),
+                    prefixIcon:
+                    const Icon(Icons.search, color: Color(0xFF888888)),
                     filled: true,
                     fillColor: const Color(0xFF333333),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                   style: const TextStyle(color: Colors.white),
                 ),
                 const SizedBox(height: 12),
-                // Chips dinámicos con count
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: filteredCats.map((cat) {
                     return FilterChip(
-                      label: Text('$cat (${catCounts[cat]})', style: const TextStyle(color: Colors.white)),
-                      selected: tempSelected.contains(cat),
-                      onSelected: (sel) => setModalState(() {
-                        sel ? tempSelected.add(cat) : tempSelected.remove(cat);
-                      }),
+                      label: Text(
+                        '${cat.name} (${catCounts[cat.slug] ?? 0})',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      selected: tempSelected.contains(cat.slug),
+                      onSelected: (sel) => setModalState(() => sel
+                          ? tempSelected.add(cat.slug)
+                          : tempSelected.remove(cat.slug)),
                       selectedColor: const Color(0xFF005BB5),
                       backgroundColor: const Color(0xFF333333),
                       checkmarkColor: Colors.white,
@@ -197,7 +281,6 @@ class _SearchState extends State<Search> {
                   }).toList(),
                 ),
                 const SizedBox(height: 16),
-                // Acciones Clear / Apply
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -206,7 +289,8 @@ class _SearchState extends State<Search> {
                         setState(() => _selectedCategories.clear());
                         Navigator.pop(ctx);
                       },
-                      child: const Text('Clear All', style: TextStyle(color: Colors.white70)),
+                      child: const Text('Clear All',
+                          style: TextStyle(color: Colors.white70)),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(

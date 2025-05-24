@@ -1,82 +1,43 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+// Usa package imports o relativos SIN la barra inicial:
+import 'package:renty/core/constant/hero.dart';
+import 'package:renty/core/theme/app_colors.dart';
+import 'package:renty/core/theme/text_styles.dart';
+import 'package:renty/core/utils/app_layout.dart';
+import 'package:renty/core/utils/app_decorations.dart';
+
 import 'package:renty/features/products/views/search_page.dart';
 
 class HeroSection extends StatelessWidget {
-  const HeroSection({super.key});
+  const HeroSection({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+      // aquí ya no falla:
+      padding: EdgeInsets.symmetric(
+        horizontal: AppLayout.sectionHorizontal / 2,
+        vertical:   AppLayout.sectionVertical   * 0.8333,
+      ),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0x190085FF),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Text(
-              'Rent Anything, Anytime',
-              style: GoogleFonts.inter(
-                color: const Color(0xFF0085FF),
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            padding: AppLayout.heroBadgePadding,
+            decoration: AppDecorations.heroBadgeBox,
+            child: Text(kHeroBadgeText, style: AppTextStyles.heroBadge),
           ),
-          const SizedBox(height: 32),
-          Text(
-            'Need Something?',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 48,
-              fontWeight: FontWeight.w700,
-              height: 1,
-            ),
-          ),
-          Text(
-            'Just Rent It',
-            style: GoogleFonts.inter(
-              color: const Color(0xFF0085FF),
-              fontSize: 48,
-              fontWeight: FontWeight.w700,
-              height: 1,
-            ),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: 500,
-            child: Text(
-              'The smart way to access everything you need without the burden of ownership',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                color: const Color(0xFF999999),
-                fontSize: 20,
-              ),
-            ),
-          ),
-          const SizedBox(height: 32),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SearchPage()),
-              );
+          const SizedBox(height: AppLayout.spacingL),
+          Text(kHeroTitleLine1, style: AppTextStyles.heroTitle1),
+          Text(kHeroTitleLine2, style: AppTextStyles.heroTitle2),
+          const SizedBox(height: AppLayout.spacingL),
+          GestureDetector(
+            onTap: () {
+              Navigator.pushReplacementNamed(context, '/search');
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0085FF),
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-            ),
-            child: Text(
-              'Start Renting Now',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-              ),
+            child: Container(
+              padding: AppLayout.heroButtonPadding,
+              decoration: AppDecorations.heroButtonBox,
+              child: Text(kHeroButtonText, style: AppTextStyles.heroButton),
             ),
           ),
         ],

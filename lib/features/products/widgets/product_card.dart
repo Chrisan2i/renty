@@ -1,19 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:renty/features/products/models/product_model.dart';
 import 'package:renty/features/products/views/product_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-import 'package:renty/features/products/widgets/product.dart';
 
 class ProductCard extends StatelessWidget {
   final ProductModel product;
   const ProductCard({Key? key, required this.product}) : super(key: key);
 
   void _navigateToDetails(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      // Si no está logueado, muestro un diálogo para Login o SignUp
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Please log in'),
+          content: const Text('You must be logged in to rent a product.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                Navigator.of(context).pushNamed('/login');
+              },
+              child: const Text('Log In'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                Navigator.of(context).pushNamed('/signup');
+              },
+              child: const Text('Sign Up'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    // Si ya está logueado, sigue con la navegación normal:
     try {
-      debugPrint('Navigating to ProductPage with product: ${product.title} (ID: ${product.productId})');
+      debugPrint(
+          'Navigating to ProductPage with product: ${product.title} (ID: ${product.productId})'
+      );
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => Product(product: product),
+          builder: (context) => ProductPage(product: product),
         ),
       ).then((_) => debugPrint('Navigation to ProductPage completed'));
     } catch (e, stackTrace) {
