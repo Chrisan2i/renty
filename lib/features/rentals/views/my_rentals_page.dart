@@ -19,7 +19,11 @@ class MyRentalsPage extends StatelessWidget {
         return Scaffold(
           body: ListView(
             children: [
-              Navbar(email: email),
+              Navbar(email: email,onToggleTheme: () {
+                // Aquí puedes cambiar el tema. Si usas Provider o Bloc, lo conectas aquí.
+                print('Cambiar tema (modo claro/oscuro)');
+              },
+              ),
               MyRentals(),
               FooterSection(),
             ],

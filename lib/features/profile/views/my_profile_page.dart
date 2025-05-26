@@ -28,7 +28,11 @@ class MyProfilePage extends StatelessWidget {
         backgroundColor: const Color(0xFF1F1F1F),
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(60),
-          child: Navbar(email: fbUser.email ?? ''),
+          child: Navbar(email: fbUser.email ?? '',onToggleTheme: () {
+            // Aquí puedes cambiar el tema. Si usas Provider o Bloc, lo conectas aquí.
+            print('Cambiar tema (modo claro/oscuro)');
+          },
+          ),
         ),
         body: SafeArea(
           child: SingleChildScrollView(

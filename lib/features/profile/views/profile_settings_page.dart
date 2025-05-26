@@ -28,7 +28,11 @@ class ProfileSettingsPage extends StatelessWidget {
         return Scaffold(
           body: ListView(
             children: [
-              Navbar(email: user.email ?? 'Invitado'),
+              Navbar(email: user.email ?? 'Invitado',onToggleTheme: () {
+            // Aquí puedes cambiar el tema. Si usas Provider o Bloc, lo conectas aquí.
+            print('Cambiar tema (modo claro/oscuro)');
+          },
+          ),
               ProfileSettings(user: user),
               const FooterSection(),
             ],

@@ -10,65 +10,67 @@ import 'package:renty/features/rentals/views/my_rentals_page.dart';
 
 class Navbar extends StatelessWidget {
   final String email;
+  final VoidCallback onToggleTheme; // 🌙 NUEVO
 
-  const Navbar({super.key, required this.email});
+  const Navbar({super.key, required this.email, required this.onToggleTheme});
 
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      color: Colors.black.withAlpha(242),
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      color: const Color(0xFF0B0B0B),
       child: Center(
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 1200),
-          padding: const EdgeInsets.symmetric(horizontal: 32),
+          constraints: const BoxConstraints(maxWidth: 1400),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Logo con navegación
               GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LandingPage()),
-                  );
-                },
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LandingPage()),
+                ),
                 child: Image.asset(
                   'assets/logo.png',
-                  height: 40,
+                  height: 36,
                 ),
               ),
-              // Nav items + buttons
               Row(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  _navButton('Inicio', () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LandingPage()),
-                    );
+                  _navItem('Inicio', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const LandingPage()));
                   }),
-                  _navButton('Artículos', () {
+                  _navItem('Artículos', () {
                     Navigator.pushReplacementNamed(context, '/search');
                   }),
-                  _navItem('Rentas'),
-                  const SizedBox(width: 20),
+                  _navItem('Rentas', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const MyRentalsPage()));
+                  }),
+                  const SizedBox(width: 16),
                   if (user != null) ...[
-                    const SizedBox(width: 10),
+                    _iconButton(Icons.search, () {}),
+                    _notificationIcon(),
+                    _iconButton(Icons.dark_mode, onToggleTheme),
+                    const SizedBox(width: 8),
+                    _primaryButton('Publicar', () {
+                      // Acción para publicar
+                    }),
+                    const SizedBox(width: 12),
                     _userMenu(context),
                   ] else ...[
-                    _navButton('Sign In', () {
+                    _navItem('Iniciar Sesión', () {
                       Navigator.pushReplacementNamed(context, '/login');
                     }),
-                    const SizedBox(width: 10),
-                    _primaryButton('Get Started', () {
+                    const SizedBox(width: 8),
+                    _primaryButton('Regístrate', () {
                       Navigator.pushReplacementNamed(context, '/signup');
                     }),
                   ],
                 ],
-              ),
+              )
             ],
           ),
         ),
@@ -76,45 +78,72 @@ class Navbar extends StatelessWidget {
     );
   }
 
-  Widget _navItem(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+  Widget _navItem(String text, VoidCallback onTap) {
+    return TextButton(
+      onPressed: onTap,
       child: Text(
-        title,
+        text,
         style: GoogleFonts.inter(
-          color: const Color(0xFF999999),
-          fontSize: 16,
+          color: const Color(0xFFEAECEF),
+          fontSize: 15,
         ),
       ),
     );
   }
 
-  Widget _navButton(String text, VoidCallback onPressed) {
-    return TextButton(
+  Widget _iconButton(IconData icon, VoidCallback onPressed) {
+    return IconButton(
       onPressed: onPressed,
-      child: Text(
-        text,
-        style: GoogleFonts.inter(
-          color: const Color(0xFF999999),
-          fontSize: 16,
+      icon: Icon(icon, color: Colors.grey[300], size: 22),
+      splashRadius: 20,
+    );
+  }
+
+  Widget _notificationIcon() {
+    // Simulación de notificación activa
+    bool hasNotification = true;
+
+    return Stack(
+      children: [
+        IconButton(
+          onPressed: () {
+            // Redirigir a página de notificaciones
+          },
+          icon: const Icon(Icons.notifications, color: Colors.grey, size: 22),
+          splashRadius: 20,
         ),
-      ),
+        if (hasNotification)
+          Positioned(
+            right: 8,
+            top: 8,
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFCD535),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+      ],
     );
   }
 
   Widget _primaryButton(String text, VoidCallback onPressed) {
-    return ElevatedButton(
+    return ElevatedButton.icon(
       onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF0085FF),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      ),
-      child: Text(
+      icon: const Icon(Icons.upload, size: 18, color: Colors.black),
+      label: Text(
         text,
         style: GoogleFonts.inter(
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
+          color: Colors.black,
+          fontWeight: FontWeight.w600,
         ),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFFFCD535),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        elevation: 0,
       ),
     );
   }
@@ -135,97 +164,37 @@ class Navbar extends StatelessWidget {
         return PopupMenuButton<int>(
           offset: const Offset(0, 50),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          color: const Color(0xFF333333),
-          icon: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: const Color(0xFF0288D1), // Borde azul más oscuro
-                width: 1, // Borde más delgado
-              ),
-            ),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: Colors.grey[800],
-              child: user == null
-                  ? const Icon(Icons.person, color: Colors.white)
-                  : ClipOval(
-                child: Image.network(
-                  profileImageUrl ?? defaultImageUrl,
-                  width: 36,
-                  height: 36,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return const CircularProgressIndicator();
-                  },
-                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, color: Colors.white),
-                ),
+          color: const Color(0xFF1E1E1E),
+          icon: CircleAvatar(
+            radius: 18,
+            backgroundColor: Colors.grey[800],
+            child: ClipOval(
+              child: Image.network(
+                profileImageUrl ?? defaultImageUrl,
+                width: 36,
+                height: 36,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Icon(Icons.person, color: Colors.white),
               ),
             ),
           ),
           itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 0,
-              child: Row(
-                children: const [
-                  Icon(Icons.account_circle, color: Colors.white70),
-                  SizedBox(width: 10),
-                  Text("Profile", style: TextStyle(color: Colors.white)),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 1,
-              child: Row(
-                children: const [
-                  Icon(Icons.settings, color: Colors.white70),
-                  SizedBox(width: 10),
-                  Text("Settings", style: TextStyle(color: Colors.white)),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 2,
-              child: Row(
-                children: const [
-                  Icon(Icons.shopping_bag, color: Colors.white70),
-                  SizedBox(width: 10),
-                  Text("My Rentals", style: TextStyle(color: Colors.white)),
-                ],
-              ),
-            ),
+            _popupItem(Icons.account_circle, "Mi Perfil", 0),
+            _popupItem(Icons.settings, "Configuración", 1),
+            _popupItem(Icons.shopping_bag, "Mis Rentas", 2),
             const PopupMenuDivider(),
-            PopupMenuItem(
-              value: 3,
-              child: Row(
-                children: const [
-                  Icon(Icons.logout, color: Colors.redAccent),
-                  SizedBox(width: 10),
-                  Text("Logout", style: TextStyle(color: Colors.redAccent)),
-                ],
-              ),
-            ),
+            _popupItem(Icons.logout, "Cerrar Sesión", 3, color: Colors.redAccent),
           ],
           onSelected: (value) {
             switch (value) {
               case 0:
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MyProfilePage()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const MyProfilePage()));
                 break;
               case 1:
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ProfileSettingsPage()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileSettingsPage()));
                 break;
               case 2:
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MyRentalsPage()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const MyRentalsPage()));
                 break;
               case 3:
                 FirebaseAuth.instance.signOut();
@@ -234,6 +203,19 @@ class Navbar extends StatelessWidget {
           },
         );
       },
+    );
+  }
+
+  PopupMenuItem<int> _popupItem(IconData icon, String text, int value, {Color? color}) {
+    return PopupMenuItem(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, color: color ?? Colors.white70, size: 18),
+          const SizedBox(width: 10),
+          Text(text, style: TextStyle(color: color ?? Colors.white)),
+        ],
+      ),
     );
   }
 }
