@@ -7,6 +7,7 @@ import '../../features/landing/views/landing_page.dart';
 import 'package:renty/features/profile/views/profile_settings_page.dart';
 import 'package:renty/features/profile/views/my_profile_page.dart';
 import 'package:renty/features/rentals/views/my_rentals_page.dart';
+import '../../features/rentals/views/my_rental_requests_page.dart';
 
 class Navbar extends StatelessWidget {
   final String email;
@@ -48,6 +49,9 @@ class Navbar extends StatelessWidget {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const MyRentalsPage()));
                   }),
                   _navItem('Solicitudes', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const MyRentalRequestsPage()));
+                  }),
+                  _navItem('Ordenes', () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const LandingPage()));
                   }),
                 ],
