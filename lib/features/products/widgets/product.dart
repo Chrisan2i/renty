@@ -2,242 +2,472 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:renty/features/products/models/product_model.dart';
 
-class Product extends StatelessWidget {
+class Product extends StatefulWidget {
   final ProductModel product;
 
   const Product({Key? key, required this.product}) : super(key: key);
 
-  // Fetch owner data from Firestore by matching userId
-  Future<Map<String, dynamic>> _fetchOwnerData(String ownerId) async {
-    debugPrint('Using static owner data for testing (ownerId: $ownerId)');
-    // Temporarily bypass Firestore to isolate rendering issues
-    return {
-      'displayName': 'Test User',
-      'fotoPerfil': 'https://res.cloudinary.com/do9dtxrvh/image/upload/v1742413057/Untitled_design_1_hvuwau.png'
-    };
+  @override
+  State<Product> createState() => _ProductState();
+}
 
-    debugPrint('Fetching owner data for ownerId: $ownerId');
-    try {
-      final query = await FirebaseFirestore.instance
-          .collection('users')
-          .where('userId', isEqualTo: ownerId)
-          .limit(1)
-          .get()
-          .timeout(const Duration(seconds: 10));
-      debugPrint('Firestore query returned ${query.docs.length} docs');
-      if (query.docs.isNotEmpty) {
-        final data = query.docs.first.data();
-        debugPrint('Owner data found: ${data['displayName']}');
-        return data;
-      }
-      debugPrint('No owner data found for ownerId: $ownerId');
-      return {'displayName': 'Unknown User', 'fotoPerfil': null};
-    } catch (e, stackTrace) {
-      debugPrint('Owner fetch error: $e\n$stackTrace');
-      return {'displayName': 'Error', 'fotoPerfil': null};
+class _ProductState extends State<Product> {
+  late final PageController _pageController;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<Map<String, dynamic>?> _fetchOwnerData(String ownerId) async {
+    final doc = await FirebaseFirestore.instance.collection('users').doc(ownerId).get();
+    if (doc.exists) {
+      return doc.data();
     }
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('Rendering Product widget for: ${product.title} (ID: ${product.productId})');
-    final imageUrl = product.images.isNotEmpty
-        ? product.images.first
-        : 'https://placehold.co/1128x500';
-    final location = product.location ?? 'Unknown';
+    final product = widget.product;
+    final List<String> images = product.images.where((url) => url.isNotEmpty).toList();
+    final bool isCarousel = images.length > 1;
+
+    final String descriptionText = product.description;
+
+    final Map<String, dynamic>? locMap = product.location;
+    final String city = locMap?['city']?.toString() ?? '';
+    final String country = locMap?['country']?.toString() ?? '';
+    final double? lat = locMap != null && locMap['latitude'] is num
+        ? (locMap['latitude'] as num).toDouble()
+        : null;
+    final double? lon = locMap != null && locMap['longitude'] is num
+        ? (locMap['longitude'] as num).toDouble()
+        : null;
+    final String builtAddress = [city, country].where((s) => s.isNotEmpty).join(', ');
+    String locationDisplay;
+    if (builtAddress.isNotEmpty) {
+      locationDisplay = builtAddress;
+    } else if (lat != null && lon != null) {
+      locationDisplay = '$lat, $lon';
+    } else {
+      locationDisplay = '';
+    }
+
+    final String category = product.category;
 
     return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // --- Imagen principal ---
-          Container(
-            margin: const EdgeInsets.all(16),
-            width: double.infinity,
-            height: 300,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              image: DecorationImage(
-                image: NetworkImage(imageUrl),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-
-          // --- Detalles del producto ---
-          Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(16),
-            decoration: ShapeDecoration(
-              color: const Color(0xFF222222),
-              shape: RoundedRectangleBorder(
-                side: BorderSide(
-                  width: 1,
-                  color: Colors.white.withOpacity(0.26),
+      child: Center(
+        child: Container(
+          width: 1272,
+          height: 2600,
+          clipBehavior: Clip.antiAlias,
+          decoration: const BoxDecoration(color: Colors.white),
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                top: 0,
+                child: Container(
+                  width: 1272,
+                  height: 2600,
+                  decoration: const BoxDecoration(color: Color(0xFF111111)),
                 ),
-                borderRadius: BorderRadius.circular(12),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+
+              // 🔁 Carrusel de imágenes
+              Positioned(
+                left: 72,
+                top: 85,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: 1128,
+                      height: 500,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: const Color(0xFF222222),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: PageView.builder(
+                        controller: _pageController,
+                        itemCount: images.length,
+                        onPageChanged: (index) {
+                          setState(() => _currentIndex = index);
+                        },
+                        itemBuilder: (context, index) {
+                          return Image.network(
+                            images[index],
+                            width: 1128,
+                            height: 500,
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      ),
+                    ),
+                    if (isCarousel)
+                      Positioned(
+                        left: 16,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                          onPressed: () {
+                            if (_currentIndex > 0) {
+                              _pageController.previousPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                    if (isCarousel)
+                      Positioned(
+                        right: 16,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                          onPressed: () {
+                            if (_currentIndex < images.length - 1) {
+                              _pageController.nextPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              // 📦 Detalles del producto
+              Positioned(
+                left: 72,
+                top: 633,
+                child: Container(
+                  width: 1128,
+                  height: 394,
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFF222222),
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                        width: 1,
+                        color: Colors.white.withOpacity(0.26),
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 105,
+                top: 666,
+                child: Text(
                   product.title,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 24,
+                    fontSize: 32,
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w700,
+                    height: 1.5,
                   ),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  '\$${product.pricePerDay.toStringAsFixed(2)} / day',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontFamily: 'Inter',
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // --- Información del propietario ---
-          FutureBuilder<Map<String, dynamic>>(
-            future: _fetchOwnerData(product.ownerId),
-            builder: (_, snapshot) {
-              if (snapshot.connectionState != ConnectionState.done) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (snapshot.hasError) {
-                return Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text('Error: ${snapshot.error}'),
-                );
-              }
-              final owner = snapshot.data!;
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                padding: const EdgeInsets.all(16),
-                decoration: ShapeDecoration(
-                  color: const Color(0xFF222222),
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(
-                      width: 1,
-                      color: Colors.white.withOpacity(0.26),
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+              ),
+              Positioned(
+                left: 105,
+                top: 730,
                 child: Row(
                   children: [
-                    CircleAvatar(
-                      backgroundImage: owner['fotoPerfil'] != null
-                          ? NetworkImage(owner['fotoPerfil'])
-                          : null,
+                    const Text('★', style: TextStyle(color: Color(0xFF0085FF), fontSize: 16, height: 1.5)),
+                    const SizedBox(width: 4),
+                    Text(
+                      product.rating.toString(),
+                      style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.5),
                     ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          owner['displayName'] ?? '',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w600,
-                          ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '(${product.totalReviews} reviews)',
+                      style: const TextStyle(color: Color(0xFF999999), fontSize: 16, height: 1.5),
+                    ),
+                    if (locationDisplay.isNotEmpty) ...[
+                      const SizedBox(width: 16),
+                      Text(
+                        locationDisplay,
+                        style: const TextStyle(color: Color(0xFF999999), fontSize: 16, height: 1.5),
+                      ),
+                    ],
+                    if (category.isNotEmpty) ...[
+                      const SizedBox(width: 16),
+                      Text(
+                        category,
+                        style: const TextStyle(color: Color(0xFF999999), fontSize: 16, height: 1.5),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Positioned(
+                left: 105,
+                top: 781,
+                child: SizedBox(
+                  width: 984,
+                  child: Text(
+                    descriptionText,
+                    style: const TextStyle(color: Color(0xFF999999), fontSize: 18, height: 1.56),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 105,
+                top: 910,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '\$${product.pricePerDay.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        color: Color(0xFF0085FF),
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 10),
+                      child: Text(
+                        '/day',
+                        style: TextStyle(
+                          color: Color(0xFF999999),
+                          fontSize: 16,
+                          height: 1.5,
                         ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          'Usually responds within 1 hour',
-                          style: TextStyle(
-                            color: Color(0xFF999999),
-                            fontSize: 16,
-                            fontFamily: 'Inter',
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
-              );
-            },
-          ),
-
-          // --- Botón “Rent Now” ---
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Rental action TBD')),
-                );
-              },
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(const Color(0xFF0085FF)),
-                shape: MaterialStateProperty.all(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
               ),
-              child: const Text('Rent Now'),
-            ),
-          ),
-
-          // --- Placeholder de mapa y ubicación ---
-          Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(16),
-            decoration: ShapeDecoration(
-              color: const Color(0xFF222222),
-              shape: RoundedRectangleBorder(
-                side: BorderSide(
-                  width: 1,
-                  color: Colors.white.withOpacity(0.26),
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  height: 200,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF333333),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              Positioned(
+                left: 1029,
+                top: 938,
+                child: GestureDetector(
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Rental action TBD')),
+                    );
+                  },
+                  child: Container(
+                    width: 137,
+                    height: 56,
+                    decoration: ShapeDecoration(
+                      color: const Color(0xFF0085FF),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'Map placeholder',
+                    alignment: Alignment.center,
+                    child: const Text(
+                      'Rent Now',
                       style: TextStyle(
-                        color: Color(0xFF999999),
+                        color: Colors.white,
                         fontSize: 16,
-                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w700,
+                        height: 1.5,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Exact location: $location',
+              ),
+
+              // 🗨️ Reseñas
+              Positioned(
+                left: 72,
+                top: 1051,
+                child: Container(
+                  width: 1128,
+                  height: 255,
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFF222222),
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                        width: 1,
+                        color: Colors.white.withOpacity(0.26),
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 105,
+                top: 1084,
+                child: const Text(
+                  'Customer Reviews',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 113,
+                top: 1128,
+                child: Text(
+                  '${product.rating} out of 5',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 208,
+                top: 1128,
+                child: Text(
+                  'Based on ${product.totalReviews} reviews',
                   style: const TextStyle(
                     color: Color(0xFF999999),
                     fontSize: 16,
-                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w400,
+                    height: 1.5,
                   ),
                 ),
-              ],
-            ),
+              ),
+              Positioned(
+                left: 559,
+                top: 1233,
+                child: GestureDetector(
+                  onTap: () {},
+                  child: const Text(
+                    'Show More Reviews',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF0085FF),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ),
+
+              // 👤 Dueño del producto
+              FutureBuilder<Map<String, dynamic>?>(
+                future: _fetchOwnerData(product.ownerId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState != ConnectionState.done) {
+                    return const Positioned(
+                      left: 72,
+                      top: 1340,
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  final owner = snapshot.data;
+                  if (owner == null) return const SizedBox.shrink();
+
+                  return Positioned(
+                    left: 72,
+                    top: 1340,
+                    child: Container(
+                      width: 1128,
+                      height: 180,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF222222),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white.withOpacity(0.26)),
+                      ),
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 32),
+                          CircleAvatar(
+                            radius: 40,
+                            backgroundImage: NetworkImage(owner['profileImageUrl'] ?? ''),
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  owner['fullName'] ?? 'Unknown',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Member since ${owner['memberSince'] ?? '2021'}',
+                                  style: const TextStyle(
+                                    color: Color(0xFF999999),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.star, color: Color(0xFF0085FF), size: 16),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${(owner['rating'] ?? 4.9).toStringAsFixed(1)} (156 reviews)',
+                                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    const Icon(Icons.access_time, color: Colors.white, size: 16),
+                                    const SizedBox(width: 4),
+                                    const Text('Responds within 1 hour', style: TextStyle(color: Colors.white, fontSize: 14)),
+                                    const SizedBox(width: 16),
+                                    const Icon(Icons.check_circle, color: Colors.white, size: 16),
+                                    const SizedBox(width: 4),
+                                    const Text('98% completion', style: TextStyle(color: Colors.white, fontSize: 14)),
+                                    const SizedBox(width: 16),
+                                    const Icon(Icons.verified_user, color: Colors.white, size: 16),
+                                    const SizedBox(width: 4),
+                                    const Text('Verified', style: TextStyle(color: Colors.white, fontSize: 14)),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Messaging feature coming soon')),
+                              );
+                            },
+                            style: TextButton.styleFrom(
+                              backgroundColor: const Color(0xFF0085FF),
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            ),
+                            child: const Text(
+                              'Message Owner',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          const SizedBox(width: 32),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
