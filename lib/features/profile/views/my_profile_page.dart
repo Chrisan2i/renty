@@ -26,18 +26,19 @@ class MyProfilePage extends StatelessWidget {
       length: 2,
       child: Scaffold(
         backgroundColor: const Color(0xFF1F1F1F),
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: Navbar(email: fbUser.email ?? '',onToggleTheme: () {
-            // Aquí puedes cambiar el tema. Si usas Provider o Bloc, lo conectas aquí.
-            print('Cambiar tema (modo claro/oscuro)');
-          },
-          ),
-        ),
         body: SafeArea(
           child: SingleChildScrollView(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ✅ Navbar renderizado dentro del body
+                Navbar(
+                  email: fbUser.email ?? '',
+                  onToggleTheme: () {
+                    print('Cambiar tema (modo claro/oscuro)');
+                  },
+                ),
+                const SizedBox(height: 24), // Espaciado después del navbar
                 StreamBuilder<UserModel>(
                   stream: AuthService().userStream(fbUser.uid),
                   builder: (context, userSnapshot) {
@@ -49,6 +50,7 @@ class MyProfilePage extends StatelessWidget {
                         child: Text('Error loading profile', style: TextStyle(color: Colors.white)),
                       );
                     }
+
                     final user = userSnapshot.data!;
                     return Column(
                       children: [
@@ -74,10 +76,10 @@ class MyProfilePage extends StatelessWidget {
                           ),
                         ),
                         SizedBox(
-                          height: 400, // Altura fija para TabBarView
-                          child: TabBarView(
+                          height: MediaQuery.of(context).size.height * 0.6,
+                          child: const TabBarView(
                             children: [
-                              const MyListingsTab(),
+                              MyListingsTab(),
                               Center(
                                 child: Text(
                                   'Aquí irán las reseñas',
@@ -91,7 +93,7 @@ class MyProfilePage extends StatelessWidget {
                     );
                   },
                 ),
-                const SizedBox(height: 24), // Espacio antes del footer
+                const SizedBox(height: 24),
                 const FooterSection(),
               ],
             ),
@@ -104,6 +106,44 @@ class MyProfilePage extends StatelessWidget {
 
 class MyListingsTab extends StatelessWidget {
   const MyListingsTab({Key? key}) : super(key: key);
+
+  Future<void> _deleteProduct(BuildContext context, String productId) async {
+    try {
+      await FirebaseFirestore.instance.collection('products').doc(productId).delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Producto eliminado exitosamente')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al eliminar producto: $e')),
+      );
+    }
+  }
+
+  Future<void> _showDeleteDialog(BuildContext context, String productId) async {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Eliminar producto'),
+          content: const Text('¿Estás seguro de que quieres eliminar este producto?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteProduct(context, productId);
+                Navigator.pop(context);
+              },
+              child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +161,9 @@ class MyListingsTab extends StatelessWidget {
         }
 
         if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.white)));
+          return Center(
+            child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.white)),
+          );
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -207,43 +249,5 @@ class MyListingsTab extends StatelessWidget {
         );
       },
     );
-  }
-
-  Future<void> _showDeleteDialog(BuildContext context, String productId) async {
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Eliminar producto'),
-          content: const Text('¿Estás seguro de que quieres eliminar este producto?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                _deleteProduct(context, productId);
-                Navigator.pop(context);
-              },
-              child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _deleteProduct(BuildContext context, String productId) async {
-    try {
-      await FirebaseFirestore.instance.collection('products').doc(productId).delete();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Producto eliminado exitosamente')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al eliminar producto: $e')),
-      );
-    }
   }
 }

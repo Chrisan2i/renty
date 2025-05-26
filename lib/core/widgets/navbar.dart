@@ -10,7 +10,7 @@ import 'package:renty/features/rentals/views/my_rentals_page.dart';
 
 class Navbar extends StatelessWidget {
   final String email;
-  final VoidCallback onToggleTheme; // 🌙 NUEVO
+  final VoidCallback onToggleTheme;
 
   const Navbar({super.key, required this.email, required this.onToggleTheme});
 
@@ -28,28 +28,32 @@ class Navbar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LandingPage()),
-                ),
-                child: Image.asset(
-                  'assets/logo.png',
-                  height: 36,
-                ),
-              ),
               Row(
                 children: [
-                  _navItem('Inicio', () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const LandingPage()));
-                  }),
+                  GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LandingPage()),
+                    ),
+                    child: Image.asset(
+                      'assets/logo.png',
+                      height: 45,
+                    ),
+                  ),
+                  const SizedBox(width: 24),
                   _navItem('Artículos', () {
                     Navigator.pushReplacementNamed(context, '/search');
                   }),
                   _navItem('Rentas', () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const MyRentalsPage()));
                   }),
-                  const SizedBox(width: 16),
+                  _navItem('Solicitudes', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const LandingPage()));
+                  }),
+                ],
+              ),
+              Row(
+                children: [
                   if (user != null) ...[
                     _iconButton(Icons.search, () {}),
                     _notificationIcon(),
@@ -70,7 +74,7 @@ class Navbar extends StatelessWidget {
                     }),
                   ],
                 ],
-              )
+              ),
             ],
           ),
         ),
@@ -120,7 +124,7 @@ class Navbar extends StatelessWidget {
               width: 8,
               height: 8,
               decoration: const BoxDecoration(
-                color: Color(0xFFFCD535),
+                color: Color(0xFF0085FF),
                 shape: BoxShape.circle,
               ),
             ),
@@ -141,7 +145,7 @@ class Navbar extends StatelessWidget {
         ),
       ),
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFFFCD535),
+        backgroundColor: const Color(0xFF0085FF),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
         elevation: 0,
       ),
