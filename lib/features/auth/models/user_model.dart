@@ -1,4 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'address_model.dart';
+import 'identity_verification.dart';
+import 'user_preferences.dart';
 
 class UserModel {
   final String userId;
@@ -10,18 +13,20 @@ class UserModel {
   final String role;
   final DateTime createdAt;
   final DateTime lastLoginAt;
-  final Map<String, dynamic> address;
-  final Map<String, dynamic> identityVerification;
-  final Map<String, dynamic> wallet;
-  final Map<String, dynamic> preferences;
-  final List<dynamic> paymentMethods;
+
   final int rating;
   final int totalRentsMade;
   final int totalRentsReceived;
+
   final bool blocked;
   final String? banReason;
   final int reports;
-  final String notesByAdmin;
+  final String? notesByAdmin;
+
+  final bool verified;
+  final AddressModel? address;
+  final IdentityVerification? identityVerification;
+  final UserPreferences? preferences;
 
   UserModel({
     required this.userId,
@@ -33,106 +38,70 @@ class UserModel {
     required this.role,
     required this.createdAt,
     required this.lastLoginAt,
-    required this.address,
-    required this.identityVerification,
-    required this.wallet,
-    required this.preferences,
-    required this.paymentMethods,
     required this.rating,
     required this.totalRentsMade,
     required this.totalRentsReceived,
     required this.blocked,
-    required this.banReason,
+    this.banReason,
     required this.reports,
-    required this.notesByAdmin,
+    this.notesByAdmin,
+    this.verified = false,
+    this.address,
+    this.identityVerification,
+    this.preferences,
   });
 
-  /// Mapea desde Firestore
-  factory UserModel.fromDocument(DocumentSnapshot doc) {
-    final json = doc.data() as Map<String, dynamic>;
-    return UserModel.fromJson(json);
+  factory UserModel.fromMap(Map<String, dynamic> map) {
+    return UserModel(
+      userId: map['userId'] ?? '',
+      fullName: map['fullName'] ?? '',
+      username: map['username'] ?? '',
+      email: map['email'] ?? '',
+      phone: map['phone'] ?? '',
+      profileImageUrl: map['profileImageUrl'] ?? '',
+      role: map['role'] ?? 'user',
+      createdAt: (map['createdAt'] as Timestamp).toDate(),
+      lastLoginAt: (map['lastLoginAt'] as Timestamp).toDate(),
+      rating: map['rating'] ?? 0,
+      totalRentsMade: map['totalRentsMade'] ?? 0,
+      totalRentsReceived: map['totalRentsReceived'] ?? 0,
+      blocked: map['blocked'] ?? false,
+      banReason: map['banReason'],
+      reports: map['reports'] ?? 0,
+      notesByAdmin: map['notesByAdmin'],
+      verified: map['verified'] ?? false,
+      address: map['address'] != null ? AddressModel.fromMap(map['address']) : null,
+      identityVerification: map['identityVerification'] != null
+          ? IdentityVerification.fromMap(map['identityVerification'])
+          : null,
+      preferences: map['preferences'] != null
+          ? UserPreferences.fromMap(map['preferences'])
+          : null,
+    );
   }
 
-  factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
-    userId: json['userId'],
-    fullName: json['fullName'],
-    username: json['username'],
-    email: json['email'],
-    phone: json['phone'],
-    profileImageUrl: json['profileImageUrl'],
-    role: json['role'],
-    createdAt: DateTime.parse(json['createdAt']),
-    lastLoginAt: DateTime.parse(json['lastLoginAt']),
-    address: Map<String, dynamic>.from(json['address']),
-    identityVerification:
-    Map<String, dynamic>.from(json['identityVerification']),
-    wallet: Map<String, dynamic>.from(json['wallet']),
-    preferences: Map<String, dynamic>.from(json['preferences']),
-    paymentMethods: List<dynamic>.from(json['paymentMethods']),
-    rating: json['rating'],
-    totalRentsMade: json['totalRentsMade'],
-    totalRentsReceived: json['totalRentsReceived'],
-    blocked: json['blocked'],
-    banReason: json['banReason'],
-    reports: json['reports'],
-    notesByAdmin: json['notesByAdmin'],
-  );
-
-  Map<String, dynamic> toJson() => {
-    'userId': userId,
-    'fullName': fullName,
-    'username': username,
-    'email': email,
-    'phone': phone,
-    'profileImageUrl': profileImageUrl,
-    'role': role,
-    'createdAt': createdAt.toIso8601String(),
-    'lastLoginAt': lastLoginAt.toIso8601String(),
-    'address': address,
-    'identityVerification': identityVerification,
-    'wallet': wallet,
-    'preferences': preferences,
-    'paymentMethods': paymentMethods,
-    'rating': rating,
-    'totalRentsMade': totalRentsMade,
-    'totalRentsReceived': totalRentsReceived,
-    'blocked': blocked,
-    'banReason': banReason,
-    'reports': reports,
-    'notesByAdmin': notesByAdmin,
-  };
-
-  /// Facilita clonar y cambiar campos puntuales
-  UserModel copyWith({
-    String? fullName,
-    String? profileImageUrl,
-    DateTime? lastLoginAt,
-    Map<String, dynamic>? preferences,
-    int? rating,
-    // añade aquí otros campos que necesites mutar...
-  }) {
-    return UserModel(
-      userId: userId,
-      fullName: fullName ?? this.fullName,
-      username: username,
-      email: email,
-      phone: phone,
-      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
-      role: role,
-      createdAt: createdAt,
-      lastLoginAt: lastLoginAt ?? this.lastLoginAt,
-      address: address,
-      identityVerification: identityVerification,
-      wallet: wallet,
-      preferences: preferences ?? this.preferences,
-      paymentMethods: paymentMethods,
-      rating: rating ?? this.rating,
-      totalRentsMade: totalRentsMade,
-      totalRentsReceived: totalRentsReceived,
-      blocked: blocked,
-      banReason: banReason,
-      reports: reports,
-      notesByAdmin: notesByAdmin,
-    );
+  Map<String, dynamic> toMap() {
+    return {
+      'userId': userId,
+      'fullName': fullName,
+      'username': username,
+      'email': email,
+      'phone': phone,
+      'profileImageUrl': profileImageUrl,
+      'role': role,
+      'createdAt': createdAt,
+      'lastLoginAt': lastLoginAt,
+      'rating': rating,
+      'totalRentsMade': totalRentsMade,
+      'totalRentsReceived': totalRentsReceived,
+      'blocked': blocked,
+      'banReason': banReason,
+      'reports': reports,
+      'notesByAdmin': notesByAdmin,
+      'verified': verified,
+      'address': address?.toMap(),
+      'preferences': preferences?.toMap(),
+      // ⚠️ identityVerification se guarda por separado
+    };
   }
 }

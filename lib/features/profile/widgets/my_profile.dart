@@ -18,11 +18,12 @@ class MyProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final memberSince = DateFormat('MMMM yyyy').format(user.createdAt);
-    final city = user.address['city'] ?? '';
-    final state = user.address['state'] ?? '';
+    final city = user.address?.city ?? '';
+    final state = user.address?.state ?? '';
     final location = [city, state].where((s) => s.isNotEmpty).join(', ');
-    final bio = (user.preferences['bio'] as String?) ?? '';
+    final memberSince = DateFormat('MMMM yyyy').format(user.createdAt);
+    final bio = user.preferences?.bio ?? '';
+
     // URL predeterminada para la imagen de perfil
     const defaultImageUrl = 'https://res.cloudinary.com/do9dtxrvh/image/upload/v1742413057/Untitled_design_1_hvuwau.png';
 

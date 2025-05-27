@@ -5,12 +5,12 @@ class RentalRequestService {
   final CollectionReference _rentalRequestsRef =
   FirebaseFirestore.instance.collection('rentalRequests');
 
-  /// Crea una nueva solicitud de alquiler
+  /// ✅ Crea una nueva solicitud de alquiler
   Future<void> createRentalRequest(RentalRequestModel request) async {
     await _rentalRequestsRef.add(request.toMap());
   }
 
-  /// Obtiene todas las solicitudes para un propietario
+  /// ✅ Obtiene todas las solicitudes para un propietario
   Future<List<RentalRequestModel>> getRequestsByOwner(String ownerId) async {
     final querySnapshot = await _rentalRequestsRef
         .where('ownerId', isEqualTo: ownerId)
@@ -18,11 +18,14 @@ class RentalRequestService {
         .get();
 
     return querySnapshot.docs
-        .map((doc) => RentalRequestModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+        .map((doc) => RentalRequestModel.fromMap(
+      doc.data() as Map<String, dynamic>,
+      doc.id,
+    ))
         .toList();
   }
 
-  /// Obtiene todas las solicitudes hechas por un arrendatario
+  /// ✅ Obtiene todas las solicitudes hechas por un arrendatario
   Future<List<RentalRequestModel>> getRequestsByRenter(String renterId) async {
     final querySnapshot = await _rentalRequestsRef
         .where('renterId', isEqualTo: renterId)
@@ -30,20 +33,30 @@ class RentalRequestService {
         .get();
 
     return querySnapshot.docs
-        .map((doc) => RentalRequestModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+        .map((doc) => RentalRequestModel.fromMap(
+      doc.data() as Map<String, dynamic>,
+      doc.id,
+    ))
         .toList();
   }
 
-  /// Actualiza el estado de la solicitud (accepted, rejected, etc.)
-  Future<void> updateRequestStatus(String requestId, String newStatus) async {
-    await _rentalRequestsRef.doc(requestId).update({
-      'status': newStatus,
-      'respondedAt': Timestamp.now(),
-    });
+  /// ✅ Obtener una sola solicitud por ID
+  Future<RentalRequestModel?> getRequestById(String requestId) async {
+    final doc = await _rentalRequestsRef.doc(requestId).get();
+    if (!doc.exists) return null;
+
+    return RentalRequestModel.fromMap(
+      doc.data() as Map<String, dynamic>,
+      doc.id,
+    );
   }
 
-  /// Elimina una solicitud
-  Future<void> deleteRequest(String requestId) async {
-    await _rentalRequestsRef.doc(requestId).delete();
+  /// ✅ Actualizar el estado de una solicitud (approve, reject)
+  Future<void> updateRequestStatus(String requestId, String status,
+      {Timestamp? respondedAt}) async {
+    await _rentalRequestsRef.doc(requestId).update({
+      'status': status,
+      if (respondedAt != null) 'respondedAt': respondedAt,
+    });
   }
 }

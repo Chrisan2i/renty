@@ -14,6 +14,12 @@ class RentalRequestModel {
   final Timestamp createdAt;
   final Timestamp? respondedAt;
 
+  // ✅ Nuevos campos financieros
+  final double pricePerDay;
+  final double subtotal;
+  final double vat;
+  final double total;
+
   RentalRequestModel({
     required this.requestId,
     required this.productId,
@@ -26,6 +32,10 @@ class RentalRequestModel {
     required this.paymentMethod,
     required this.status,
     required this.createdAt,
+    required this.pricePerDay,
+    required this.subtotal,
+    required this.vat,
+    required this.total,
     this.respondedAt,
   });
 
@@ -37,12 +47,16 @@ class RentalRequestModel {
       renterId: map['renterId'] ?? '',
       startDate: map['startDate'] ?? Timestamp.now(),
       endDate: map['endDate'] ?? Timestamp.now(),
-      daysRequested: map['daysRequested'] ?? 1,
+      daysRequested: map['daysRequested'] ?? 0,
       message: map['message'] ?? '',
-      paymentMethod: map['paymentMethod'] ?? 'N/A',
+      paymentMethod: map['paymentMethod'] ?? '',
       status: map['status'] ?? 'pending',
       createdAt: map['createdAt'] ?? Timestamp.now(),
       respondedAt: map['respondedAt'],
+      pricePerDay: (map['pricePerDay'] as num?)?.toDouble() ?? 0.0,
+      subtotal: (map['subtotal'] as num?)?.toDouble() ?? 0.0,
+      vat: (map['vat'] as num?)?.toDouble() ?? 0.0,
+      total: (map['total'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
@@ -59,6 +73,10 @@ class RentalRequestModel {
       'status': status,
       'createdAt': createdAt,
       'respondedAt': respondedAt,
+      'pricePerDay': pricePerDay,
+      'subtotal': subtotal,
+      'vat': vat,
+      'total': total,
     };
   }
 }

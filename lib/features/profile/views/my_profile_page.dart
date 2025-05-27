@@ -57,9 +57,29 @@ class MyProfilePage extends StatelessWidget {
                         MyProfile(
                           user: user,
                           onEditProfile: () => Navigator.pushNamed(context, '/profile_settings'),
-                          onVerifyAccount: () => ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Verify Account tapped')),
-                          ),
+                          onVerifyAccount: () async {
+                            final uid = FirebaseAuth.instance.currentUser?.uid;
+
+                            if (uid == null) return;
+
+                            final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+                            final data = doc.data();
+
+                            if (data != null) {
+                              final user = UserModel.fromMap(data);
+
+                              final status = user.identityVerification?.status;
+
+                              if (status != null && status.isNotEmpty) {
+                                // Ya envió documentos
+                                Navigator.pushNamed(context, '/verification-status');
+                              } else {
+                                // Aún no ha enviado → ir al formulario
+                                Navigator.pushNamed(context, '/account-verification');
+                              }
+                            }
+
+                          },
                           onAddProduct: () => Navigator.pushNamed(context, '/add-product'),
                         ),
                         const Divider(color: Colors.white24),

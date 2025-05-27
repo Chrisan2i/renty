@@ -1,12 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_model.dart';
+import '../models/address_model.dart';
+import '../models/identity_verification.dart';
+import '../models/user_preferences.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  /// Registro con email/password y crea el documento en Firestore
+  /// Registro con email/password y creación de usuario en Firestore
   Future<UserCredential> registerWithEmail({
     required String fullName,
     required String username,
@@ -17,9 +20,11 @@ class AuthService {
       email: email,
       password: password,
     );
+
     final user = result.user!;
     final now = DateTime.now();
 
+    // ✅ Crear modelo completo
     final userModel = UserModel(
       userId: user.uid,
       fullName: fullName,
@@ -30,70 +35,51 @@ class AuthService {
       role: 'user',
       createdAt: now,
       lastLoginAt: now,
-      address: {
-        'street': '',
-        'city': '',
-        'state': '',
-        'zip': '',
-        'country': '',
-        'latitude': null,
-        'longitude': null,
-      },
-      identityVerification: {
-        'type': '',
-        'number': '',
-        'frontImageUrl': '',
-        'backImageUrl': '',
-        'selfieWithIdUrl': '',
-        'faceScanData': null,
-        'verified': false,
-        'verifiedBy': '',
-        'verifiedAt': null,
-      },
-      wallet: {
-        'balance': 0.0,
-        'currency': 'USD',
-        'lastUpdated': now.toIso8601String(),
-      },
-      preferences: {
-        'language': 'es',
-        'receiveNotifications': true,
-        'darkMode': false,
-      },
-      paymentMethods: [],
       rating: 0,
       totalRentsMade: 0,
       totalRentsReceived: 0,
       blocked: false,
-      banReason: null,
       reports: 0,
-      notesByAdmin: '',
+      verified: false,
+      address: AddressModel(
+        street: '',
+        city: '',
+        state: '',
+        country: '',
+        zipCode: '',
+      ),
+      identityVerification: IdentityVerification(
+        frontImageUrl: '',
+        backImageUrl: '',
+        selfieWithIdUrl: '',
+        residenceProofUrl: '',
+        status: 'not_submitted',
+        submittedAt: null,
+        verifiedAt: null,
+        verifiedBy: null,
+      ),
+      preferences: UserPreferences(
+        receiveNotifications: true,
+        preferredLanguage: 'es',
+        theme: 'system',
+        categoriesOfInterest: [],
+      ),
     );
 
-    await _db.collection('users').doc(user.uid).set(userModel.toJson());
+    // ✅ Guardar en Firestore
+    await _db.collection('users').doc(user.uid).set(userModel.toMap());
+
     return result;
   }
-
-  /// Actualiza la fecha de último login
-  Future<void> updateLastLogin(String uid) async {
-    await _db
-        .collection('users')
-        .doc(uid)
-        .update({'lastLoginAt': DateTime.now().toIso8601String()});
-  }
-
-  /// Obtiene el UserModel una sola vez
-  Future<UserModel> getUserModelOnce(String uid) async {
-    final doc = await _db.collection('users').doc(uid).get();
-    return UserModel.fromDocument(doc);
-  }
-
-  /// Stream para escuchar cambios en el documento de usuario
   Stream<UserModel> userStream(String uid) {
-    return _db
+    return FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
         .snapshots()
-        .map((doc) => UserModel.fromDocument(doc));
+        .map((doc) => UserModel.fromMap(doc.data()!));
   }
+
+
+  /// Obtener usuario actual
+  User? get currentUser => _auth.currentUser;
 }

@@ -3,6 +3,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:renty/features/products/views/search_page.dart';
 import 'package:renty/features/profile/views/my_profile_page.dart';
+import 'package:renty/features/profile/views/account_verification_view.dart';
+import 'package:renty/features/profile/views/verification_status_view.dart';
 import 'package:renty/features/rentals/views/my_rentals_page.dart';
 import 'features/landing/views/landing_page.dart';
 import 'package:renty/features/auth/views/login_page.dart';
@@ -58,6 +60,8 @@ class RentyApp extends StatelessWidget {
         '/rental-requests': (context) => const RentalRequestsPage(),
         '/inbox': (context) => const InboxPage(),
         '/profile_settings': (context) => const ProfileSettingsPage(),
+        '/account-verification': (context) => const AccountVerificationView(),
+        '/verification-status': (context) => const VerificationStatusView(),
       },
     );
   }

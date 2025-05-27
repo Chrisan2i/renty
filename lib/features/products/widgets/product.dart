@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:renty/features/products/models/product_model.dart';
 import 'package:renty/features/rentals/models/rental_request_model.dart';
 import 'package:renty/features/rentals/services/rental_request_service.dart';
+import 'package:renty/features/rentals/views/send_request.dart';
 
 class Product extends StatefulWidget {
   final ProductModel product;
@@ -264,144 +265,15 @@ class _ProductState extends State<Product> {
                 top: 938,
                 child: GestureDetector(
                   onTap: () {
-                    final _rentalService = RentalRequestService();
-
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        final _formKey = GlobalKey<FormState>();
-                        final _daysController = TextEditingController();
-                        final _messageController = TextEditingController();
-                        String paymentMethod = 'Transferencia';
-
-                        return AlertDialog(
-                          backgroundColor: const Color(0xFF1E1E1E),
-                          title: const Text('Detalles de Renta', style: TextStyle(color: Colors.white)),
-                          content: Form(
-                            key: _formKey,
-                            child: SizedBox(
-                              width: 400,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  TextFormField(
-                                    controller: _daysController,
-                                    keyboardType: TextInputType.number,
-                                    style: const TextStyle(color: Colors.white),
-                                    decoration: const InputDecoration(
-                                      labelText: '¿Cuántos días?',
-                                      labelStyle: TextStyle(color: Colors.white70),
-                                      enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.white30),
-                                      ),
-                                    ),
-                                    validator: (value) {
-                                      final days = int.tryParse(value ?? '');
-                                      if (days == null || days <= 0) {
-                                        return 'Ingresa un número válido de días';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                  const SizedBox(height: 12),
-                                  DropdownButtonFormField<String>(
-                                    value: paymentMethod,
-                                    dropdownColor: const Color(0xFF2C2C2C),
-                                    decoration: const InputDecoration(
-                                      labelText: 'Método de pago',
-                                      labelStyle: TextStyle(color: Colors.white70),
-                                      enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.white30),
-                                      ),
-                                    ),
-                                    style: const TextStyle(color: Colors.white),
-                                    items: ['Transferencia', 'Pago Móvil', 'Zelle', 'Efectivo']
-                                        .map((method) => DropdownMenuItem(
-                                      value: method,
-                                      child: Text(method),
-                                    ))
-                                        .toList(),
-                                    onChanged: (value) {
-                                      if (value != null) paymentMethod = value;
-                                    },
-                                  ),
-                                  const SizedBox(height: 12),
-                                  TextFormField(
-                                    controller: _messageController,
-                                    maxLines: 3,
-                                    style: const TextStyle(color: Colors.white),
-                                    decoration: const InputDecoration(
-                                      labelText: '¿Para qué lo vas a usar?',
-                                      labelStyle: TextStyle(color: Colors.white70),
-                                      enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.white30),
-                                      ),
-                                    ),
-                                    validator: (value) {
-                                      if (value == null || value.trim().length < 5) {
-                                        return 'Describe brevemente el uso';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Cancelar'),
-                            ),
-                            ElevatedButton(
-                              onPressed: () async {
-                                if (_formKey.currentState!.validate()) {
-                                  try {
-                                    final now = DateTime.now();
-                                    final days = int.parse(_daysController.text.trim());
-                                    final renterId = FirebaseAuth.instance.currentUser?.uid;
-
-                                    if (renterId == null) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Debes iniciar sesión para continuar')),
-                                      );
-                                      return;
-                                    }
-
-                                    final request = RentalRequestModel(
-                                      requestId: '',
-                                      productId: product.productId,
-                                      ownerId: product.ownerId,
-                                      renterId: renterId,
-                                      startDate: Timestamp.fromDate(now),
-                                      endDate: Timestamp.fromDate(now.add(Duration(days: days))),
-                                      daysRequested: days,
-                                      message: _messageController.text.trim(),
-                                      paymentMethod: paymentMethod,
-                                      status: 'pending',
-                                      createdAt: Timestamp.now(),
-                                      respondedAt: null,
-                                    );
-
-                                    await _rentalService.createRentalRequest(request);
-
-                                    Navigator.pop(context);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('✅ Solicitud enviada con éxito')),
-                                    );
-                                  } catch (e) {
-                                    Navigator.pop(context);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Error al enviar: $e')),
-                                    );
-                                  }
-                                }
-                              },
-                              child: const Text('Enviar solicitud'),
-                            ),
-                          ],
-                        );
-                      },
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => SendRequestPage(
+                          productId: product.productId,
+                          ownerId: product.ownerId,
+                          pricePerDay: product.pricePerDay,
+                        ),
+                      ),
                     );
                   },
                   child: Container(
