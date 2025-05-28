@@ -5,7 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:renty/features/products/models/product_model.dart';
 import 'package:renty/features/rentals/models/rental_request_model.dart';
 import 'package:renty/features/rentals/services/rental_request_service.dart';
-import 'package:renty/features/rentals/views/send_request.dart';
+import 'package:renty/features/rentals/views/send_request_page.dart';
+import 'package:renty/features/rentals/widgets/send_request.dart';
 
 class Product extends StatefulWidget {
   final ProductModel product;

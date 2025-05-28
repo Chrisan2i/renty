@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
-import 'dart:typed_data'; // Added import for Uint8List
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:renty/features/products/models/product_model.dart';
 import 'package:renty/features/products/services/product_service.dart';
 import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AddProduct extends StatefulWidget {
   const AddProduct({Key? key}) : super(key: key);
@@ -21,11 +22,36 @@ class _AddProductState extends State<AddProduct> {
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final _priceCtrl = TextEditingController();
-  final _categories = ['Tecnología', 'Deportes', 'Herramientas', 'Vehículos'];
-  String _selectedCategory = 'Tecnología';
+
+  List<Map<String, dynamic>> _categories = [];
+  String? _selectedCategory;
+
   bool _isSubmitting = false;
   final List<XFile> _images = [];
   final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    final snapshot = await FirebaseFirestore.instance.collection('categories').where('isActive', isEqualTo: true).get();
+    setState(() {
+      _categories = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'name': data['name'],
+          'slug': data['slug'],
+          'iconUrl': data['iconUrl'],
+        };
+      }).toList();
+      if (_categories.isNotEmpty) {
+        _selectedCategory = _categories.first['slug'];
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -52,8 +78,8 @@ class _AddProductState extends State<AddProduct> {
   }
 
   Future<List<String>> _uploadImagesToCloudinary() async {
-    const cloudName = 'dmjwqsx8l'; // Your Cloudinary cloud name
-    const uploadPreset = 'unsigned_renty'; // Your Cloudinary upload preset
+    const cloudName = 'dmjwqsx8l';
+    const uploadPreset = 'unsigned_renty';
     final url = Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/upload');
     List<String> imageUrls = [];
 
@@ -63,7 +89,6 @@ class _AddProductState extends State<AddProduct> {
         request.fields['upload_preset'] = uploadPreset;
 
         if (kIsWeb) {
-          // For Web
           final bytes = await image.readAsBytes();
           final multipartFile = http.MultipartFile.fromBytes(
             'file',
@@ -72,7 +97,6 @@ class _AddProductState extends State<AddProduct> {
           );
           request.files.add(multipartFile);
         } else {
-          // For Mobile
           final multipartFile = await http.MultipartFile.fromPath(
             'file',
             image.path,
@@ -88,72 +112,21 @@ class _AddProductState extends State<AddProduct> {
           imageUrls.add(data['secure_url']);
         } else {
           debugPrint('Error al subir la imagen: $responseData');
-          throw Exception('Failed to upload image: ${image.name}');
+          throw Exception('Error al subir imagen');
         }
       } catch (e) {
-        debugPrint('Excepción en subida: $e');
-        throw Exception('Error uploading image: ${image.name}');
+        rethrow;
       }
     }
     return imageUrls;
   }
 
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_images.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Agrega al menos una foto')),
-      );
-      return;
-    }
-    setState(() => _isSubmitting = true);
-
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Debes iniciar sesión primero.')),
-      );
-      setState(() => _isSubmitting = false);
-      return;
-    }
-
-    try {
-      // Upload images to Cloudinary
-      final imageUrls = await _uploadImagesToCloudinary();
-
-      final now = DateTime.now();
-      final product = ProductModel(
-        productId: '',
-        ownerId: user.uid,
-        title: _titleCtrl.text.trim(),
-        description: _descCtrl.text.trim(),
-        category: _selectedCategory,
-        pricePerDay: double.tryParse(_priceCtrl.text) ?? 0,
-        images: imageUrls, // Store Cloudinary URLs
-        isAvailable: true,
-        rating: 0,
-        totalReviews: 0,
-        createdAt: now,
-        updatedAt: now,
-        location: {'city': '', 'state': '', 'country': '', 'latitude': null, 'longitude': null},
-      );
-
-      await ProductService().addProduct(product);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Producto publicado exitosamente')),
-      );
-      Navigator.of(context).pop();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
-    } finally {
-      setState(() => _isSubmitting = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    if (_categories.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Form(
@@ -243,7 +216,7 @@ class _AddProductState extends State<AddProduct> {
             ),
             const SizedBox(height: 16),
 
-            // Price and category
+            // Price and Category
             Row(
               children: [
                 Expanded(
@@ -276,7 +249,13 @@ class _AddProductState extends State<AddProduct> {
                     ),
                     dropdownColor: const Color(0xFF222222),
                     items: _categories
-                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                        .map((c) => DropdownMenuItem<String>(
+                      value: c['slug'],
+                      child: Text(
+                        c['name'],
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ))
                         .toList(),
                     onChanged: (v) => setState(() => _selectedCategory = v!),
                   ),
@@ -285,29 +264,86 @@ class _AddProductState extends State<AddProduct> {
             ),
             const SizedBox(height: 24),
 
-            // Submit button
+            // Submit
             ElevatedButton(
-              onPressed: _isSubmitting ? null : _submit,
+              onPressed: _isSubmitting ? null : _submitForm,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0085FF),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               child: _isSubmitting
                   ? const SizedBox(
                 height: 24,
                 width: 24,
-                child: CircularProgressIndicator(
-                    strokeWidth: 2, color: Colors.white),
+                child:
+                CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
               )
-                  : const Text('Publicar producto',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+                  : const Text(
+                'Publicar producto',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
             const SizedBox(height: 24),
           ],
         ),
       ),
     );
+  }
+
+
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      final imageUrls = await _uploadImagesToCloudinary();
+      final now = DateTime.now();
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+
+      if (userId == null) {
+        throw Exception('Usuario no autenticado');
+      }
+
+      final productId = FirebaseFirestore.instance.collection('products').doc().id;
+
+      final product = ProductModel(
+        productId: productId,
+        ownerId: userId,
+        title: _titleCtrl.text.trim(),
+        description: _descCtrl.text.trim(),
+        category: _selectedCategory ?? '',
+        pricePerDay: double.parse(_priceCtrl.text.trim()),
+        images: imageUrls,
+        isAvailable: true,
+        rating: 0.0,
+        totalReviews: 0,
+        createdAt: now,
+        updatedAt: now,
+        location: {
+          "lat": 0.0,
+          "lng": 0.0,
+          "address": "Dirección no especificada",
+        },
+      );
+
+      await ProductService().addProduct(product);
+
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+    } catch (e, stack) {
+      debugPrint('Error al publicar producto: $e\n$stack');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al publicar: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 }

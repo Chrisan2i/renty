@@ -11,7 +11,6 @@ import 'package:renty/features/auth/views/login_page.dart';
 import 'package:renty/features/auth/views/sign_up_page.dart';
 import 'package:renty/features/products/views/add_product_page.dart';
 import 'package:renty/features/products/views/product_list_page.dart';
-import 'package:renty/features/rentals/views/rental_requests_page.dart';
 import 'package:renty/features/chat/views/inbox_page.dart';
 import 'package:renty/features/profile/views/profile_settings_page.dart';
 import 'package:renty/firebase_options.dart';
@@ -57,7 +56,6 @@ class RentyApp extends StatelessWidget {
         '/myrentals': (context) => const MyRentalsPage(),
         '/add-product': (context) => const AddProductPage(),
         '/product-list': (context) => const ProductListPage(),
-        '/rental-requests': (context) => const RentalRequestsPage(),
         '/inbox': (context) => const InboxPage(),
         '/profile_settings': (context) => const ProfileSettingsPage(),
         '/account-verification': (context) => const AccountVerificationView(),
