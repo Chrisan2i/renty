@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:renty/features/profile/widgets/profile_settings.dart';
-import 'package:renty/core/widgets/navbar.dart';
+import 'package:renty/core/widgets/navbar/navbar.dart';
 import 'package:renty/core/widgets/footer.dart';
 
 class ProfileSettingsPage extends StatelessWidget {

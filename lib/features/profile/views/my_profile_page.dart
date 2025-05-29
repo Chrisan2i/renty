@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../auth/services/auth_service.dart';
 import '../../auth/models/user_model.dart';
 import '../widgets/my_profile.dart';
-import '../../../core/widgets/navbar.dart';
+import '../../../core/widgets/navbar/navbar.dart';
 import '../../../core/widgets/footer.dart';
 import 'package:renty/features/products/models/product_model.dart';
 import 'package:renty/features/products/widgets/product_card.dart';

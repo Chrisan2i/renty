@@ -6,7 +6,7 @@ import 'package:renty/core/theme/text_styles.dart';
 import 'package:renty/core/utils/app_layout.dart';
 import 'package:renty/core/utils/app_decorations.dart';
 
-import 'package:renty/features/products/views/search_page.dart';
+import 'package:renty/features/search/view/search_page.dart';
 
 class HeroSection extends StatelessWidget {
   const HeroSection({Key? key}) : super(key: key);

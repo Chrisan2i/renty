@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:renty/features/products/views/search_page.dart';
+import 'package:renty/features/search/view/search_page.dart';
 import 'package:renty/features/profile/views/my_profile_page.dart';
 import 'package:renty/features/profile/views/account_verification_view.dart';
 import 'package:renty/features/profile/views/verification_status_view.dart';
@@ -9,7 +9,7 @@ import 'package:renty/features/rentals/views/my_rentals_page.dart';
 import 'features/landing/views/landing_page.dart';
 import 'package:renty/features/auth/views/login_page.dart';
 import 'package:renty/features/auth/views/sign_up_page.dart';
-import 'package:renty/features/products/views/add_product_page.dart';
+import 'package:renty/features/add_product/view/add_product_page.dart';
 import 'package:renty/features/products/views/product_list_page.dart';
 import 'package:renty/features/chat/views/inbox_page.dart';
 import 'package:renty/features/profile/views/profile_settings_page.dart';

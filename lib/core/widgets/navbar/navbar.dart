@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:renty/features/products/views/search_page.dart';
-import '../../features/landing/views/landing_page.dart';
+import '../../../features/landing/views/landing_page.dart';
 import 'package:renty/features/profile/views/profile_settings_page.dart';
 import 'package:renty/features/profile/views/my_profile_page.dart';
 import 'package:renty/features/rentals/views/my_rentals_page.dart';
-import '../../features/rentals/views/my_rental_requests_page.dart';
+import '../../../features/rentals/views/my_rental_requests_page.dart';
+import 'package:renty/core/widgets/navbar/notification_icon.dart';
+
 
 class Navbar extends StatelessWidget {
   final String email;
   final VoidCallback onToggleTheme;
+
 
   const Navbar({super.key, required this.email, required this.onToggleTheme});
 
@@ -60,11 +62,11 @@ class Navbar extends StatelessWidget {
                 children: [
                   if (user != null) ...[
                     _iconButton(Icons.search, () {}),
-                    _notificationIcon(),
+                    NotificationIcon(),
                     _iconButton(Icons.dark_mode, onToggleTheme),
                     const SizedBox(width: 8),
                     _primaryButton('Publicar', () {
-                      // Acción para publicar
+                      Navigator.pushReplacementNamed(context, '/add-product');
                     }),
                     const SizedBox(width: 12),
                     _userMenu(context),
@@ -107,35 +109,6 @@ class Navbar extends StatelessWidget {
     );
   }
 
-  Widget _notificationIcon() {
-    // Simulación de notificación activa
-    bool hasNotification = true;
-
-    return Stack(
-      children: [
-        IconButton(
-          onPressed: () {
-            // Redirigir a página de notificaciones
-          },
-          icon: const Icon(Icons.notifications, color: Colors.grey, size: 22),
-          splashRadius: 20,
-        ),
-        if (hasNotification)
-          Positioned(
-            right: 8,
-            top: 8,
-            child: Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: Color(0xFF0085FF),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
 
   Widget _primaryButton(String text, VoidCallback onPressed) {
     return ElevatedButton.icon(

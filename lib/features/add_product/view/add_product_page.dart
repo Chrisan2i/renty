@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../../core/widgets/navbar.dart';
+import '../../../core/widgets/navbar/navbar.dart';
 import '../../../core/widgets/footer.dart';
-import '../widgets/add_product.dart';
+import '../add_product.dart';
 
 class AddProductPage extends StatelessWidget {
   const AddProductPage({Key? key}) : super(key: key);

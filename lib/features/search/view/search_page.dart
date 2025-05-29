@@ -1,8 +1,8 @@
 // lib/features/products/views/search_page.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:renty/features/products/widgets/search.dart';
-import 'package:renty/core/widgets/navbar.dart';
+import 'package:renty/features/search/widgets/search.dart';
+import 'package:renty/core/widgets/navbar/navbar.dart';
 import 'package:renty/core/widgets/footer.dart';
 
 class SearchPage extends StatelessWidget {
