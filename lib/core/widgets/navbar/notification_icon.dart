@@ -12,8 +12,27 @@ class NotificationIcon extends StatefulWidget {
 class _NotificationIconState extends State<NotificationIcon> {
   final LayerLink _layerLink = LayerLink();
   OverlayEntry? _overlayEntry;
+  List<QueryDocumentSnapshot> _notifications = [];
 
-  void _showPopupMenu(BuildContext context, List<QueryDocumentSnapshot> docs) {
+  Future<void> _loadNotifications() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('notifications')
+        .where('userId', isEqualTo: user.uid)
+        .orderBy('createdAt', descending: true)
+        .limit(10)
+        .get();
+
+    setState(() {
+      _notifications = snapshot.docs;
+    });
+  }
+
+  void _showPopupMenu(BuildContext context) async {
+    await _loadNotifications();
+
     _overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
         width: 300,
@@ -24,7 +43,7 @@ class _NotificationIconState extends State<NotificationIcon> {
             elevation: 8,
             borderRadius: BorderRadius.circular(12),
             color: const Color(0xFF1E1E1E),
-            child: docs.isEmpty
+            child: _notifications.isEmpty
                 ? const Padding(
               padding: EdgeInsets.all(16),
               child: Text(
@@ -35,19 +54,25 @@ class _NotificationIconState extends State<NotificationIcon> {
                 : ListView.separated(
               shrinkWrap: true,
               padding: const EdgeInsets.all(8),
-              itemCount: docs.length,
-              separatorBuilder: (_, __) => const Divider(color: Colors.white24),
+              itemCount: _notifications.length,
+              separatorBuilder: (_, __) =>
+              const Divider(color: Colors.white24),
               itemBuilder: (context, index) {
-                final data = docs[index].data() as Map<String, dynamic>;
+                final data =
+                _notifications[index].data() as Map<String, dynamic>;
                 return ListTile(
-                  leading: const Icon(Icons.notifications_active, color: Colors.white),
-                  title: Text(data['title'] ?? '', style: const TextStyle(color: Colors.white)),
-                  subtitle: Text(data['message'] ?? '', style: const TextStyle(color: Colors.white70)),
-                  trailing: const Icon(Icons.circle, color: Color(0xFF0085FF), size: 10),
+                  leading: const Icon(Icons.notifications_active,
+                      color: Colors.white),
+                  title: Text(data['title'] ?? '',
+                      style: const TextStyle(color: Colors.white)),
+                  subtitle: Text(data['message'] ?? '',
+                      style: const TextStyle(color: Colors.white70)),
+                  trailing: const Icon(Icons.circle,
+                      color: Color(0xFF0085FF), size: 10),
                   onTap: () {
                     FirebaseFirestore.instance
                         .collection('notifications')
-                        .doc(docs[index].id)
+                        .doc(_notifications[index].id)
                         .update({'read': true});
                     _removePopup();
                   },
@@ -77,27 +102,29 @@ class _NotificationIconState extends State<NotificationIcon> {
 
     return CompositedTransformTarget(
       link: _layerLink,
-      child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
+      child: FutureBuilder<QuerySnapshot>(
+        future: FirebaseFirestore.instance
             .collection('notifications')
             .where('userId', isEqualTo: user.uid)
             .where('read', isEqualTo: false)
-            .snapshots(),
+            .limit(1)
+            .get(),
         builder: (context, snapshot) {
-          final hasNotification = snapshot.hasData && snapshot.data!.docs.isNotEmpty;
-          final docs = snapshot.data?.docs ?? [];
+          final hasNotification =
+              snapshot.hasData && snapshot.data!.docs.isNotEmpty;
 
           return Stack(
             children: [
               IconButton(
                 onPressed: () {
                   if (_overlayEntry == null) {
-                    _showPopupMenu(context, docs);
+                    _showPopupMenu(context);
                   } else {
                     _removePopup();
                   }
                 },
-                icon: const Icon(Icons.notifications, color: Colors.grey, size: 22),
+                icon: const Icon(Icons.notifications,
+                    color: Colors.grey, size: 22),
                 splashRadius: 20,
               ),
               if (hasNotification)
