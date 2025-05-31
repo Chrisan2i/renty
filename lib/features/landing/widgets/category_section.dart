@@ -1,5 +1,3 @@
-// lib/features/landing/widgets/category_section.dart
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:renty/core/constant/category.dart';
@@ -10,27 +8,25 @@ import 'package:renty/core/utils/app_decorations.dart';
 import 'package:renty/features/categories/models/category_model.dart';
 import 'package:renty/features/categories/services/category_service.dart';
 
-/// Displays the “Popular Categories” section on the landing page.
-///
-/// - Loads categories from Firestore via [CategoryService].
-/// - Shows a loader while fetching, or an error message if it fails.
-/// - Renders each category with its name, description, optional image,
-///   and a tappable “Browse Category →” that navigates to `/search`.
-/// - Design, paddings, fonts and colors match the original static version exactly.
 class CategorySection extends StatelessWidget {
   const CategorySection({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Section title, identical to original design
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final backgroundColor = isDark
+        ? AppColors.backgroundGrey // gris oscuro original
+        : const Color(0xFFF6F6F6); // gris muy claro, no blanco puro
+
     final header = Text(
       kCategorySectionTitle,
       textAlign: TextAlign.center,
-      style: AppTextStyles.categoryHeader,
+      style: AppTextStyles.categoryHeader(context),
     );
 
     return Container(
-      color: AppColors.backgroundGrey,
+      color: backgroundColor,
       padding: AppLayout.sectionPadding,
       child: FutureBuilder<List<CategoryModel>>(
         future: CategoryService().getAllCategories(),
@@ -38,17 +34,14 @@ class CategorySection extends StatelessWidget {
           Widget body;
 
           if (snapshot.hasError) {
-            // Error state
             body = Text(
               'Error loading categories',
               textAlign: TextAlign.center,
-              style: AppTextStyles.categoryDesc.copyWith(color: Colors.red),
+              style: AppTextStyles.categoryDesc(context).copyWith(color: Colors.red),
             );
           } else if (!snapshot.hasData) {
-            // Loading state
             body = const Center(child: CircularProgressIndicator());
           } else {
-            // Data loaded successfully
             final categories = snapshot.data!;
             body = Wrap(
               spacing: AppLayout.spacingM,
@@ -58,11 +51,10 @@ class CategorySection extends StatelessWidget {
                 return Container(
                   width: AppLayout.categoryCardWidth,
                   padding: EdgeInsets.all(AppLayout.categoryCardPadding),
-                  decoration: AppDecorations.categoryCard,
+                  decoration: AppDecorations.categoryCard(context),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Optional image at top of card
                       if (cat.iconUrl != null && cat.iconUrl!.isNotEmpty) ...[
                         Container(
                           height: 120,
@@ -76,13 +68,10 @@ class CategorySection extends StatelessWidget {
                         ),
                         const SizedBox(height: AppLayout.spacingS),
                       ],
-                      // Category title
-                      Text(cat.name, style: AppTextStyles.categoryTitle),
+                      Text(cat.name, style: AppTextStyles.categoryTitle(context)),
                       const SizedBox(height: AppLayout.spacingS),
-                      // Category description
-                      Text(cat.description, style: AppTextStyles.categoryDesc),
+                      Text(cat.description, style: AppTextStyles.categoryDesc(context)),
                       const SizedBox(height: AppLayout.spacingS),
-                      // Browse link
                       GestureDetector(
                         onTap: () {
                           Navigator.pushNamed(
@@ -93,7 +82,7 @@ class CategorySection extends StatelessWidget {
                         },
                         child: Text(
                           kCategoryActionText,
-                          style: AppTextStyles.categoryAction,
+                          style: AppTextStyles.categoryAction(context),
                         ),
                       ),
                     ],
@@ -116,3 +105,4 @@ class CategorySection extends StatelessWidget {
     );
   }
 }
+

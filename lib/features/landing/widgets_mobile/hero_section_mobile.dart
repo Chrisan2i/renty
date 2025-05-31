@@ -17,19 +17,22 @@ class HeroSectionMobile extends StatelessWidget {
         children: [
           Container(
             padding: AppLayout.heroBadgePadding,
-            decoration: AppDecorations.heroBadgeBox,
-            child: Text(kHeroBadgeText, style: AppTextStyles.heroBadge.copyWith(fontSize: 12)),
+            decoration: AppDecorations.heroBadgeBox(context),
+            child: Text(
+              kHeroBadgeText,
+              style: AppTextStyles.heroBadge(context).copyWith(fontSize: 12),
+            ),
           ),
           const SizedBox(height: 24),
           Text(
             kHeroTitleLine1,
             textAlign: TextAlign.center,
-            style: AppTextStyles.heroTitle1.copyWith(fontSize: 24),
+            style: AppTextStyles.heroTitle1(context).copyWith(fontSize: 24),
           ),
           Text(
             kHeroTitleLine2,
             textAlign: TextAlign.center,
-            style: AppTextStyles.heroTitle2.copyWith(fontSize: 20),
+            style: AppTextStyles.heroTitle2(context).copyWith(fontSize: 20),
           ),
           const SizedBox(height: 24),
           GestureDetector(
@@ -38,8 +41,11 @@ class HeroSectionMobile extends StatelessWidget {
             },
             child: Container(
               padding: AppLayout.heroButtonPadding,
-              decoration: AppDecorations.heroButtonBox,
-              child: Text(kHeroButtonText, style: AppTextStyles.heroButton.copyWith(fontSize: 14)),
+              decoration: AppDecorations.heroButtonBox(context),
+              child: Text(
+                kHeroButtonText,
+                style: AppTextStyles.heroButton(context).copyWith(fontSize: 14),
+              ),
             ),
           ),
         ],

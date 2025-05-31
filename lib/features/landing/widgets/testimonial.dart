@@ -1,5 +1,3 @@
-// lib/features/home/widgets/testimonial_section.dart
-
 import 'package:flutter/material.dart';
 import 'package:renty/core/constant/testimonial.dart';
 import 'package:renty/core/theme/app_colors.dart';
@@ -12,22 +10,28 @@ class TestimonialSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final backgroundColor = isDark
+        ? AppColors.backgroundGrey
+        : const Color(0xFFF6F6F6); // blanco grisáceo para contraste
+
     return Container(
-      color: AppColors.backgroundGrey,
+      color: backgroundColor,
       padding: AppLayout.sectionPadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             kTestimonialSectionTitle,
-            style: AppTextStyles.testimonialHeader,
+            style: AppTextStyles.testimonialHeader(context),
           ),
           const SizedBox(height: AppLayout.spacingL),
           Center(
             child: Container(
               width: AppLayout.testimonialCardWidth,
               padding: AppLayout.testimonialCardPadding,
-              decoration: AppDecorations.testimonialCard,
+              decoration: AppDecorations.testimonialCard(context),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -40,10 +44,10 @@ class TestimonialSection extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(kTestimonialName, style: AppTextStyles.testimonialName),
-                        Text(kTestimonialRole, style: AppTextStyles.testimonialRole),
+                        Text(kTestimonialName, style: AppTextStyles.testimonialName(context)),
+                        Text(kTestimonialRole, style: AppTextStyles.testimonialRole(context)),
                         const SizedBox(height: AppLayout.spacingS),
-                        Text(kTestimonialMessage, style: AppTextStyles.testimonialMsg),
+                        Text(kTestimonialMessage, style: AppTextStyles.testimonialMsg(context)),
                       ],
                     ),
                   ),
@@ -52,8 +56,12 @@ class TestimonialSection extends StatelessWidget {
                     width: AppLayout.arrowButtonSize,
                     height: AppLayout.arrowButtonSize,
                     alignment: Alignment.center,
-                    decoration: AppDecorations.testimonialArrowBox,
-                    child: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                    decoration: AppDecorations.testimonialArrowBox(context),
+                    child: Icon(
+                      Icons.arrow_forward_ios,
+                      color: Theme.of(context).iconTheme.color,
+                      size: 16,
+                    ),
                   ),
                 ],
               ),
@@ -64,4 +72,3 @@ class TestimonialSection extends StatelessWidget {
     );
   }
 }
-

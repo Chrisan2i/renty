@@ -4,52 +4,68 @@ import 'app_colors.dart';
 
 class AppTextStyles {
   // How It Works
-  static TextStyle hiwHeader  = GoogleFonts.inter(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w700);
-  static TextStyle hiwTitle   = GoogleFonts.inter(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w700);
-  static TextStyle hiwDesc    = GoogleFonts.inter(color: AppColors.neutralGray, fontSize: 16);
-  static TextStyle hiwEmoji   = const TextStyle(fontSize: 30);
+  static TextStyle hiwHeader(BuildContext context) =>
+      GoogleFonts.inter(color: Theme.of(context).textTheme.bodyLarge?.color, fontSize: 36, fontWeight: FontWeight.w700);
+
+  static TextStyle hiwTitle(BuildContext context) =>
+      GoogleFonts.inter(color: Theme.of(context).textTheme.bodyLarge?.color, fontSize: 24, fontWeight: FontWeight.w700);
+
+  static TextStyle hiwDesc(BuildContext context) =>
+      GoogleFonts.inter(color: AppColors.neutralGray, fontSize: 16);
+
+  static TextStyle hiwEmoji(BuildContext context) =>
+      const TextStyle(fontSize: 30);
 
   // Testimonial
-  static TextStyle testimonialHeader = GoogleFonts.inter(
-    color: AppColors.white,
-    fontSize: 36,
-    fontWeight: FontWeight.w700,
-  );
+  static TextStyle testimonialHeader(BuildContext context) =>
+      GoogleFonts.inter(
+        color: Theme.of(context).textTheme.bodyLarge?.color,
+        fontSize: 36,
+        fontWeight: FontWeight.w700,
+      );
 
-  /// Nombre del usuario
-  static TextStyle testimonialName = GoogleFonts.inter(
-    color: AppColors.white,
-    fontSize: 24,
-    fontWeight: FontWeight.w700,
-  );
+  static TextStyle testimonialName(BuildContext context) =>
+      GoogleFonts.inter(
+        color: Theme.of(context).textTheme.bodyLarge?.color,
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+      );
 
-  /// Rol / subtítulo
-  static TextStyle testimonialRole = GoogleFonts.inter(
-    color: AppColors.accentBlue,
-    fontSize: 16,
-  );
+  static TextStyle testimonialRole(BuildContext context) =>
+      GoogleFonts.inter(
+        color: AppColors.accentBlue,
+        fontSize: 16,
+      );
 
-  /// Mensaje del testimonio
-  static TextStyle testimonialMsg = GoogleFonts.inter(
-    color: AppColors.white,
-    fontSize: 20,
-  );
+  static TextStyle testimonialMsg(BuildContext context) =>
+      GoogleFonts.inter(
+        color: Theme.of(context).textTheme.bodyLarge?.color,
+        fontSize: 20,
+      );
 
   // CATEGORY
-  /// “Popular Categories”
-  static TextStyle categoryHeader = GoogleFonts.inter(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w700);
-  /// Títulos de cada tarjeta
-  static TextStyle categoryTitle  = GoogleFonts.inter(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w700);
-  /// Descripción de cada tarjeta
-  static TextStyle categoryDesc   = GoogleFonts.inter(color: AppColors.neutralGray, fontSize: 16);
-  /// Enlace/acción de cada tarjeta
-  static TextStyle categoryAction = GoogleFonts.inter(color: AppColors.accentBlue, fontSize: 16, fontWeight: FontWeight.w600);
+  static TextStyle categoryHeader(BuildContext context) =>
+      GoogleFonts.inter(color: Theme.of(context).textTheme.bodyLarge?.color, fontSize: 36, fontWeight: FontWeight.w700);
 
+  static TextStyle categoryTitle(BuildContext context) =>
+      GoogleFonts.inter(color: Theme.of(context).textTheme.bodyLarge?.color, fontSize: 24, fontWeight: FontWeight.w700);
 
+  static TextStyle categoryDesc(BuildContext context) =>
+      GoogleFonts.inter(color: AppColors.neutralGray, fontSize: 16);
+
+  static TextStyle categoryAction(BuildContext context) =>
+      GoogleFonts.inter(color: AppColors.accentBlue, fontSize: 16, fontWeight: FontWeight.w600);
 
   // Hero
-  static TextStyle heroBadge    = GoogleFonts.inter(color: AppColors.accentBlue, fontSize: 16, fontWeight: FontWeight.w600);
-  static TextStyle heroTitle1   = GoogleFonts.inter(color: Colors.white, fontSize: 48, fontWeight: FontWeight.w700, height: 1);
-  static TextStyle heroTitle2   = GoogleFonts.inter(color: AppColors.accentBlue, fontSize: 48, fontWeight: FontWeight.w700, height: 1);
-  static TextStyle heroButton   = GoogleFonts.inter(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700);
+  static TextStyle heroBadge(BuildContext context) =>
+      GoogleFonts.inter(color: AppColors.accentBlue, fontSize: 16, fontWeight: FontWeight.w600);
+
+  static TextStyle heroTitle1(BuildContext context) =>
+      GoogleFonts.inter(color: Theme.of(context).textTheme.bodyLarge?.color, fontSize: 48, fontWeight: FontWeight.w700, height: 1);
+
+  static TextStyle heroTitle2(BuildContext context) =>
+      GoogleFonts.inter(color: AppColors.accentBlue, fontSize: 48, fontWeight: FontWeight.w700, height: 1);
+
+  static TextStyle heroButton(BuildContext context) =>
+      GoogleFonts.inter(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700);
 }

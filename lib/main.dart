@@ -14,6 +14,10 @@ import 'package:renty/features/products/views/product_list_page.dart';
 import 'package:renty/features/chat/views/inbox_page.dart';
 import 'package:renty/features/profile/views/profile_settings_page.dart';
 import 'package:renty/firebase_options.dart';
+import 'package:provider/provider.dart';
+import 'core/theme/app_theme.dart';
+import 'package:renty/core/providers/theme_provider.dart';
+
 
 
 void main() async {
@@ -21,45 +25,50 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const RentyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const RentyApp(),
+    ),
+  );
+
 }
 
 class RentyApp extends StatelessWidget {
   const RentyApp({super.key});
 
   @override
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Renty',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF111111),
-        primaryColor: const Color(0xFF0085FF),
-        textTheme: GoogleFonts.interTextTheme(
-          ThemeData.dark().textTheme,
-        ),
-      ),
-      initialRoute: '/landing',
-      routes: {
-        '/landing': (context) => const LandingPage(),
-        '/login': (context) => const LoginScreen(),
-        '/signup': (context) => const SignUpScreen(),
-        '/profile': (context) => const MyProfilePage(),
-        '/search': (c) {
-          // 1) Leemos de settings.arguments el slug (String)
-          final slug = ModalRoute.of(c)!.settings.arguments as String?;
-          // 2) Se lo pasamos al SearchPage
-          return SearchPage(
-            initialSelectedCategories: slug == null ? [] : [slug],
-          );
-        },
-        '/myrentals': (context) => const MyRentalsPage(),
-        '/add-product': (context) => const AddProductPage(),
-        '/product-list': (context) => const ProductListPage(),
-        '/inbox': (context) => const InboxPage(),
-        '/profile_settings': (context) => const ProfileSettingsPage(),
-        '/account-verification': (context) => const AccountVerificationView(),
-        '/verification-status': (context) => const VerificationStatusView(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Renty',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeProvider.themeMode,
+          initialRoute: '/landing',
+          routes: {
+            '/landing': (context) => const LandingPage(),
+            '/login': (context) => const LoginScreen(),
+            '/signup': (context) => const SignUpScreen(),
+            '/profile': (context) => const MyProfilePage(),
+            '/search': (c) {
+              final slug = ModalRoute.of(c)!.settings.arguments as String?;
+              return SearchPage(
+                initialSelectedCategories: slug == null ? [] : [slug],
+              );
+            },
+            '/myrentals': (context) => const MyRentalsPage(),
+            '/add-product': (context) => const AddProductPage(),
+            '/product-list': (context) => const ProductListPage(),
+            '/inbox': (context) => const InboxPage(),
+            '/profile_settings': (context) => const ProfileSettingsPage(),
+            '/account-verification': (context) => const AccountVerificationView(),
+            '/verification-status': (context) => const VerificationStatusView(),
+          },
+        );
       },
     );
   }

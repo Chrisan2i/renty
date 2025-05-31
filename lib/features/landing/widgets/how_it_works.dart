@@ -11,11 +11,11 @@ class HowItWorksSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.backgroundDark,
+      color: Theme.of(context).scaffoldBackgroundColor,
       padding: AppLayout.sectionPadding,
       child: Column(
         children: [
-          Text(kHowItWorksSectionTitle, style: AppTextStyles.hiwHeader),
+          Text(kHowItWorksSectionTitle, style: AppTextStyles.hiwHeader(context)),
           const SizedBox(height: AppLayout.spacingL),
           Wrap(
             spacing: AppLayout.spacingXL,
@@ -28,18 +28,18 @@ class HowItWorksSection extends StatelessWidget {
                     width: AppLayout.hiwStepBoxSize,
                     height: AppLayout.hiwStepBoxSize,
                     alignment: Alignment.center,
-                    decoration: AppDecorations.hiwStepBox,
-                    child: Text(step['emoji']!, style: AppTextStyles.hiwEmoji),
+                    decoration: AppDecorations.hiwStepBox(context),
+                    child: Text(step['emoji']!, style: AppTextStyles.hiwEmoji(context)),
                   ),
                   const SizedBox(height: AppLayout.spacingM),
-                  Text(step['title']!, style: AppTextStyles.hiwTitle),
+                  Text(step['title']!, style: AppTextStyles.hiwTitle(context)),
                   const SizedBox(height: AppLayout.spacingS),
                   SizedBox(
                     width: AppLayout.hiwDescWidth,
                     child: Text(
                       step['desc']!,
                       textAlign: TextAlign.center,
-                      style: AppTextStyles.hiwDesc,
+                      style: AppTextStyles.hiwDesc(context),
                     ),
                   ),
                 ],

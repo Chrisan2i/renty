@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:renty/core/constant/how_it_works.dart';
 import 'package:renty/core/theme/app_colors.dart';
@@ -12,7 +11,7 @@ class HowItWorksSectionMobile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.backgroundDark,
+      color: Theme.of(context).scaffoldBackgroundColor,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -20,7 +19,7 @@ class HowItWorksSectionMobile extends StatelessWidget {
           Text(
             kHowItWorksSectionTitle,
             textAlign: TextAlign.center,
-            style: AppTextStyles.hiwHeader.copyWith(fontSize: 20),
+            style: AppTextStyles.hiwHeader(context).copyWith(fontSize: 20),
           ),
           const SizedBox(height: 32),
           ...kHowItWorksSteps.map((step) {
@@ -32,18 +31,24 @@ class HowItWorksSectionMobile extends StatelessWidget {
                     width: 72,
                     height: 72,
                     alignment: Alignment.center,
-                    decoration: AppDecorations.hiwStepBox,
-                    child: Text(step['emoji']!, style: AppTextStyles.hiwEmoji.copyWith(fontSize: 28)),
+                    decoration: AppDecorations.hiwStepBox(context),
+                    child: Text(
+                      step['emoji']!,
+                      style: AppTextStyles.hiwEmoji(context).copyWith(fontSize: 28),
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  Text(step['title']!, style: AppTextStyles.hiwTitle.copyWith(fontSize: 16)),
+                  Text(
+                    step['title']!,
+                    style: AppTextStyles.hiwTitle(context).copyWith(fontSize: 16),
+                  ),
                   const SizedBox(height: 8),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Text(
                       step['desc']!,
                       textAlign: TextAlign.center,
-                      style: AppTextStyles.hiwDesc.copyWith(fontSize: 12),
+                      style: AppTextStyles.hiwDesc(context).copyWith(fontSize: 12),
                     ),
                   ),
                 ],

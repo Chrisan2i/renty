@@ -3,35 +3,56 @@ import '../theme/app_colors.dart';
 import 'app_layout.dart';
 
 class AppDecorations {
-  static final BoxDecoration hiwStepBox = BoxDecoration(
-    color: AppColors.accentBlue,
-    borderRadius: BorderRadius.circular(AppLayout.hiwStepBoxSize * 0.2), // 20
+  // Paso de "How It Works"
+  static BoxDecoration hiwStepBox(BuildContext context) => BoxDecoration(
+    color: Theme.of(context).primaryColor,
+    borderRadius: BorderRadius.circular(AppLayout.hiwStepBoxSize * 0.2),
   );
-  static final BoxDecoration heroBadgeBox = BoxDecoration(
-    color: AppColors.accentBlue.withOpacity(0.1), // 0x19 = 10% opacity
+
+  // Etiqueta arriba del título en el hero
+  static BoxDecoration heroBadgeBox(BuildContext context) => BoxDecoration(
+    color: Theme.of(context).brightness == Brightness.dark
+        ? AppColors.accentBlue.withOpacity(0.1)
+        : AppColors.accentBlue.withOpacity(0.15),
     borderRadius: BorderRadius.circular(AppLayout.heroBadgeRadius),
   );
-  static final BoxDecoration heroButtonBox = BoxDecoration(
-    color: AppColors.accentBlue,
+
+  // Botón principal en el hero
+  static BoxDecoration heroButtonBox(BuildContext context) => BoxDecoration(
+    color: Theme.of(context).primaryColor,
     borderRadius: BorderRadius.circular(AppLayout.heroButtonRadius),
   );
 
-  /// Decoración de la tarjeta testimonial
-  static BoxDecoration testimonialCard = BoxDecoration(
-    color: AppColors.testimonialCardBg,
+  // Tarjeta de Testimonial
+  static BoxDecoration testimonialCard(BuildContext context) => BoxDecoration(
+    color: Theme.of(context).brightness == Brightness.dark
+        ? AppColors.testimonialCardBg
+        : Colors.grey[100],
     borderRadius: BorderRadius.circular(12),
-    border: Border.all(color: AppColors.testimonialCardBorder),
+    border: Border.all(
+      color: Theme.of(context).brightness == Brightness.dark
+          ? AppColors.testimonialCardBorder
+          : Colors.grey.withOpacity(0.2),
+    ),
   );
 
-  /// Decoración del botón de flecha
-  static BoxDecoration testimonialArrowBox = const BoxDecoration(
-    color: AppColors.accentBlue,
-    shape: BoxShape.circle,
-  );
-  /// Carta de Category
-  static BoxDecoration categoryCard = BoxDecoration(
-    color: AppColors.categoryCardBg,
+  // Flecha circular de los testimonios
+  static BoxDecoration testimonialArrowBox(BuildContext context) =>
+      BoxDecoration(
+        color: Theme.of(context).primaryColor,
+        shape: BoxShape.circle,
+      );
+
+  // Tarjeta de categoría
+  static BoxDecoration categoryCard(BuildContext context) => BoxDecoration(
+    color: Theme.of(context).brightness == Brightness.dark
+        ? AppColors.categoryCardBg
+        : Colors.grey[100],
     borderRadius: BorderRadius.circular(AppLayout.categoryCardRadius),
-    border: Border.all(color: AppColors.categoryCardBorder),
+    border: Border.all(
+      color: Theme.of(context).brightness == Brightness.dark
+          ? AppColors.categoryCardBorder
+          : Colors.grey.withOpacity(0.2),
+    ),
   );
 }

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:renty/core/constant/category.dart';
 import 'package:renty/core/theme/app_colors.dart';
@@ -12,14 +11,20 @@ class CategorySectionMobile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final backgroundColor = isDark
+        ? AppColors.backgroundGrey
+        : const Color(0xFFF6F6F6); // blanco-gris claro para diferenciar
+
     final header = Text(
       kCategorySectionTitle,
       textAlign: TextAlign.center,
-      style: AppTextStyles.categoryHeader.copyWith(fontSize: 18),
+      style: AppTextStyles.categoryHeader(context).copyWith(fontSize: 18),
     );
 
     return Container(
-      color: AppColors.backgroundGrey,
+      color: backgroundColor,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: FutureBuilder<List<CategoryModel>>(
         future: CategoryService().getAllCategories(),
@@ -30,7 +35,7 @@ class CategorySectionMobile extends StatelessWidget {
             body = Text(
               'Error al cargar categorías',
               textAlign: TextAlign.center,
-              style: AppTextStyles.categoryDesc.copyWith(color: Colors.red),
+              style: AppTextStyles.categoryDesc(context).copyWith(color: Colors.red),
             );
           } else if (!snapshot.hasData) {
             body = const Center(child: CircularProgressIndicator());
@@ -40,6 +45,7 @@ class CategorySectionMobile extends StatelessWidget {
               children: categories.map((cat) {
                 return Card(
                   margin: const EdgeInsets.only(bottom: 16),
+                  color: Theme.of(context).cardColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -48,12 +54,23 @@ class CategorySectionMobile extends StatelessWidget {
                     leading: cat.iconUrl != null && cat.iconUrl!.isNotEmpty
                         ? ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.network(cat.iconUrl!, height: 48, width: 48, fit: BoxFit.cover),
+                      child: Image.network(
+                        cat.iconUrl!,
+                        height: 48,
+                        width: 48,
+                        fit: BoxFit.cover,
+                      ),
                     )
                         : null,
-                    title: Text(cat.name, style: AppTextStyles.categoryTitle.copyWith(fontSize: 16)),
-                    subtitle: Text(cat.description, style: AppTextStyles.categoryDesc.copyWith(fontSize: 12)),
-                    trailing: const Icon(Icons.chevron_right),
+                    title: Text(
+                      cat.name,
+                      style: AppTextStyles.categoryTitle(context).copyWith(fontSize: 16),
+                    ),
+                    subtitle: Text(
+                      cat.description,
+                      style: AppTextStyles.categoryDesc(context).copyWith(fontSize: 12),
+                    ),
+                    trailing: Icon(Icons.chevron_right, color: Theme.of(context).iconTheme.color),
                     onTap: () {
                       Navigator.pushNamed(context, '/search', arguments: cat.slug);
                     },

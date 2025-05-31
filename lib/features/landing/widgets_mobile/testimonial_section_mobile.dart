@@ -1,5 +1,3 @@
-// lib/features/home/widgets/testimonial_section_mobile.dart
-
 import 'package:flutter/material.dart';
 import 'package:renty/core/constant/testimonial.dart';
 import 'package:renty/core/theme/app_colors.dart';
@@ -12,8 +10,14 @@ class TestimonialSectionMobile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final backgroundColor = isDark
+        ? AppColors.backgroundGrey
+        : const Color(0xFFF6F6F6); // gris claro que no sea blanco puro
+
     return Container(
-      color: AppColors.backgroundGrey,
+      color: backgroundColor,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -21,12 +25,12 @@ class TestimonialSectionMobile extends StatelessWidget {
           Text(
             kTestimonialSectionTitle,
             textAlign: TextAlign.center,
-            style: AppTextStyles.testimonialHeader.copyWith(fontSize: 18),
+            style: AppTextStyles.testimonialHeader(context).copyWith(fontSize: 18),
           ),
           const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: AppDecorations.testimonialCard,
+            decoration: AppDecorations.testimonialCard(context),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -35,20 +39,30 @@ class TestimonialSectionMobile extends StatelessWidget {
                   backgroundImage: NetworkImage(kTestimonialAvatarUrl),
                 ),
                 const SizedBox(height: 16),
-                Text(kTestimonialName, style: AppTextStyles.testimonialName.copyWith(fontSize: 14)),
-                Text(kTestimonialRole, style: AppTextStyles.testimonialRole.copyWith(fontSize: 12)),
+                Text(
+                  kTestimonialName,
+                  style: AppTextStyles.testimonialName(context).copyWith(fontSize: 14),
+                ),
+                Text(
+                  kTestimonialRole,
+                  style: AppTextStyles.testimonialRole(context).copyWith(fontSize: 12),
+                ),
                 const SizedBox(height: 12),
                 Text(
                   kTestimonialMessage,
-                  style: AppTextStyles.testimonialMsg.copyWith(fontSize: 12),
+                  style: AppTextStyles.testimonialMsg(context).copyWith(fontSize: 12),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 Container(
                   width: 36,
                   height: 36,
-                  decoration: AppDecorations.testimonialArrowBox,
-                  child: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
+                  decoration: AppDecorations.testimonialArrowBox(context),
+                  child: Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: Theme.of(context).iconTheme.color,
+                  ),
                 ),
               ],
             ),

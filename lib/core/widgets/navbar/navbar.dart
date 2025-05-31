@@ -9,21 +9,21 @@ import 'package:renty/features/rentals/views/my_rentals_page.dart';
 import '../../../features/rentals/views/my_rental_requests_page.dart';
 import 'package:renty/core/widgets/navbar/notification_icon.dart';
 
-
 class Navbar extends StatelessWidget {
   final String email;
   final VoidCallback onToggleTheme;
-
 
   const Navbar({super.key, required this.email, required this.onToggleTheme});
 
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final icon = isDark ? Icons.dark_mode : Icons.light_mode;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
-      color: const Color(0xFF0B0B0B),
+      color: const Color(0xFF0B0B0B), // Mantener color oscuro siempre
       child: Center(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 1400),
@@ -44,16 +44,16 @@ class Navbar extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 24),
-                  _navItem('Artículos', () {
+                  _navItem(context, 'Artículos', () {
                     Navigator.pushReplacementNamed(context, '/search');
                   }),
-                  _navItem('Rentas', () {
+                  _navItem(context, 'Rentas', () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const MyRentalsPage()));
                   }),
-                  _navItem('Solicitudes', () {
+                  _navItem(context, 'Solicitudes', () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const MyRentalRequestsPage()));
                   }),
-                  _navItem('Ordenes', () {
+                  _navItem(context, 'Ordenes', () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const LandingPage()));
                   }),
                 ],
@@ -61,9 +61,9 @@ class Navbar extends StatelessWidget {
               Row(
                 children: [
                   if (user != null) ...[
-                    _iconButton(Icons.search, () {}),
+                    _iconButton(context, Icons.search, () {}),
                     NotificationIcon(),
-                    _iconButton(Icons.dark_mode, onToggleTheme),
+                    _iconButton(context, icon, onToggleTheme),
                     const SizedBox(width: 8),
                     _primaryButton('Publicar', () {
                       Navigator.pushReplacementNamed(context, '/add-product');
@@ -71,7 +71,7 @@ class Navbar extends StatelessWidget {
                     const SizedBox(width: 12),
                     _userMenu(context),
                   ] else ...[
-                    _navItem('Iniciar Sesión', () {
+                    _navItem(context, 'Iniciar Sesión', () {
                       Navigator.pushReplacementNamed(context, '/login');
                     }),
                     const SizedBox(width: 8),
@@ -88,27 +88,26 @@ class Navbar extends StatelessWidget {
     );
   }
 
-  Widget _navItem(String text, VoidCallback onTap) {
+  Widget _navItem(BuildContext context, String text, VoidCallback onTap) {
     return TextButton(
       onPressed: onTap,
       child: Text(
         text,
         style: GoogleFonts.inter(
-          color: const Color(0xFFEAECEF),
+          color: Colors.white, // Mantener blanco para contraste sobre fondo oscuro
           fontSize: 15,
         ),
       ),
     );
   }
 
-  Widget _iconButton(IconData icon, VoidCallback onPressed) {
+  Widget _iconButton(BuildContext context, IconData icon, VoidCallback onPressed) {
     return IconButton(
       onPressed: onPressed,
-      icon: Icon(icon, color: Colors.grey[300], size: 22),
+      icon: Icon(icon, color: Colors.white, size: 22),
       splashRadius: 20,
     );
   }
-
 
   Widget _primaryButton(String text, VoidCallback onPressed) {
     return ElevatedButton.icon(

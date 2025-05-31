@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// Usa package imports o relativos SIN la barra inicial:
 import 'package:renty/core/constant/hero.dart';
 import 'package:renty/core/theme/app_colors.dart';
 import 'package:renty/core/theme/text_styles.dart';
@@ -14,21 +13,29 @@ class HeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      // aquí ya no falla:
       padding: EdgeInsets.symmetric(
         horizontal: AppLayout.sectionHorizontal / 2,
-        vertical:   AppLayout.sectionVertical   * 0.8333,
+        vertical: AppLayout.sectionVertical * 0.8333,
       ),
       child: Column(
         children: [
           Container(
             padding: AppLayout.heroBadgePadding,
-            decoration: AppDecorations.heroBadgeBox,
-            child: Text(kHeroBadgeText, style: AppTextStyles.heroBadge),
+            decoration: AppDecorations.heroBadgeBox(context),
+            child: Text(
+              kHeroBadgeText,
+              style: AppTextStyles.heroBadge(context),
+            ),
           ),
           const SizedBox(height: AppLayout.spacingL),
-          Text(kHeroTitleLine1, style: AppTextStyles.heroTitle1),
-          Text(kHeroTitleLine2, style: AppTextStyles.heroTitle2),
+          Text(
+            kHeroTitleLine1,
+            style: AppTextStyles.heroTitle1(context),
+          ),
+          Text(
+            kHeroTitleLine2,
+            style: AppTextStyles.heroTitle2(context),
+          ),
           const SizedBox(height: AppLayout.spacingL),
           GestureDetector(
             onTap: () {
@@ -36,8 +43,11 @@ class HeroSection extends StatelessWidget {
             },
             child: Container(
               padding: AppLayout.heroButtonPadding,
-              decoration: AppDecorations.heroButtonBox,
-              child: Text(kHeroButtonText, style: AppTextStyles.heroButton),
+              decoration: AppDecorations.heroButtonBox(context),
+              child: Text(
+                kHeroButtonText,
+                style: AppTextStyles.heroButton(context),
+              ),
             ),
           ),
         ],
