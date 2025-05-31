@@ -76,6 +76,7 @@ class _SendRequestState extends State<SendRequest> {
         'title': 'Nueva solicitud de renta',
         'message': 'Has recibido una nueva solicitud para tu producto.',
         'requestId': docRef.id,
+        'type': 'rental_request',
         'read': false,
         'createdAt': Timestamp.now(),
       });
@@ -230,4 +231,3 @@ Widget _summaryRow(String label, String value, {bool bold = false}) {
       ),
     );
   }
-

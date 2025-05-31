@@ -24,25 +24,23 @@ class AddProductPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFF1F1F1F),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Navbar(email: fbUser.email ?? '',onToggleTheme: () {
-          // Aquí puedes cambiar el tema. Si usas Provider o Bloc, lo conectas aquí.
-          print('Cambiar tema (modo claro/oscuro)');
-        },
-        ),
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
+              // ✅ Navbar movido aquí
+              Navbar(
+                email: fbUser.email ?? '',
+                onToggleTheme: () {
+                  print('Cambiar tema (modo claro/oscuro)');
+                },
+              ),
               // Contenido centrado y limitado a 800px
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 800),
                 child: const AddProduct(),
               ),
-              // Footer al final del contenido desplazable
-              const SizedBox(height: 24), // Espacio adicional
+              const SizedBox(height: 24),
               const FooterSection(),
             ],
           ),

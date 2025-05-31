@@ -1,1649 +1,280 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class MyRentalRequests extends StatelessWidget {
-  const MyRentalRequests({super.key});
+class MyRentalRequests extends StatefulWidget {
+  const MyRentalRequests({Key? key}) : super(key: key);
+
+  @override
+  State<MyRentalRequests> createState() => _MyRentalRequestsState();
+}
+
+class _MyRentalRequestsState extends State<MyRentalRequests> with TickerProviderStateMixin {
+  late TabController _tabController;
+  final List<String> _statuses = ['All', 'Pending', 'Accepted', 'Rejected'];
+
+  final Map<String, String> statusMap = {
+    'Pending': 'pending',
+    'Accepted': 'accepted',
+    'Rejected': 'rejected',
+  };
+
+  @override
+  void initState() {
+    _tabController = TabController(length: _statuses.length, vsync: this);
+    super.initState();
+  }
+
+  Stream<QuerySnapshot>? _rentalRequestsStream(String status) {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return null;
+
+    final baseQuery = FirebaseFirestore.instance
+        .collection('rentalRequests')
+        .where('ownerId', isEqualTo: uid);
+
+    if (status == 'All') {
+      return baseQuery.snapshots();
+    } else {
+      final statusValue = statusMap[status];
+      return baseQuery.where('status', isEqualTo: statusValue).snapshots();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 1271,
-          height: 1662,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(color: Colors.white),
-          child: Stack(
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Positioned(
-                left: 0,
-                top: 0,
-                child: Container(
-                  width: 1272,
-                  height: 1662,
-                  decoration: BoxDecoration(color: const Color(0xFF111111)),
-                ),
-              ),
-              Positioned(
-                left: 52,
-                top: 24,
-                child: Text(
-                  'Rental Requests',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.43,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 52,
-                top: 72,
-                child: Text(
-                  'Manage requests from people who want to rent your products',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 52,
-                top: 120,
-                child: Container(
-                  width: 1168,
-                  height: 36,
-                  decoration: ShapeDecoration(
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: Colors.white.withValues(alpha: 26),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 52,
-                top: 120,
-                child: Container(
-                  width: 98,
-                  height: 35,
-                  decoration: ShapeDecoration(
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 2,
-                        color: const Color(0xFF0085FF),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 60,
-                top: 120,
-                child: Text(
-                  'All Requests',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 165,
-                top: 120,
-                child: Container(
-                  width: 70,
-                  height: 35,
-                  decoration: ShapeDecoration(
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 2,
-                        color: Colors.black.withValues(alpha: 0),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 173,
-                top: 120,
-                child: Text(
-                  'Pending',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 251,
-                top: 120,
-                child: Container(
-                  width: 80,
-                  height: 35,
-                  decoration: ShapeDecoration(
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 2,
-                        color: Colors.black.withValues(alpha: 0),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 259,
-                top: 120,
-                child: Text(
-                  'Accepted',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 347,
-                top: 120,
-                child: Container(
-                  width: 74,
-                  height: 35,
-                  decoration: ShapeDecoration(
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 2,
-                        color: Colors.black.withValues(alpha: 0),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 355,
-                top: 120,
-                child: Text(
-                  'Rejected',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 52,
-                top: 180,
-                child: Container(
-                  width: 1168,
-                  height: 373,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF222222),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: Colors.white.withValues(alpha: 26),
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 197,
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  decoration: ShapeDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage("https://placehold.co/50x50"),
-                      fit: BoxFit.contain,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 2,
-                        color: const Color(0xFF0085FF),
-                      ),
-                      borderRadius: BorderRadius.circular(16777200),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 131,
-                top: 199,
-                child: Text(
-                  'Sarah Johnson',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.33,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 131,
-                top: 227,
-                child: Text(
-                  '★',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 151,
-                top: 227,
-                child: Text(
-                  '4.8',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 177,
-                top: 227,
-                child: Text(
-                  '(23 reviews)',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1067,
-                top: 197,
-                child: Container(
-                  width: 62,
-                  height: 26,
-                  decoration: ShapeDecoration(
-                    color: const Color(0x1FF59E0B),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1075,
-                top: 201,
-                child: Text(
-                  'Pending',
-                  style: TextStyle(
-                    color: const Color(0xFFF59E0B),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1137,
-                top: 201,
-                child: Text(
-                  '2024-01-15',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 263,
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: ShapeDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage("https://placehold.co/60x60"),
-                      fit: BoxFit.contain,
-                    ),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 141,
-                top: 263,
-                child: Text(
-                  'DeWalt Power Drill - Professional Grade',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.38,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 141,
-                top: 293,
-                child: Text(
-                  'Start:',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 175,
-                top: 293,
-                child: Text(
-                  '2024-01-20',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 676,
-                top: 293,
-                child: Text(
-                  'End:',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 705,
-                top: 293,
-                child: Text(
-                  '2024-01-25',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 141,
-                top: 319,
-                child: Text(
-                  'Duration:',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 196,
-                top: 319,
-                child: Text(
-                  '5 days',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 676,
-                top: 319,
-                child: Text(
-                  'Total:',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 711,
-                top: 319,
-                child: Text(
-                  '\$125',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 349,
-                child: Container(
-                  width: 1134,
-                  height: 71,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF333333),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 81,
-                top: 361,
-                child: Text(
-                  'Message from renter:',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 81,
-                top: 390,
-                child: Text(
-                  'Hi! I need this drill for a home renovation project. I have experience with power tools and will take great care of it.',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 436,
-                child: Container(
-                  width: 1134,
-                  height: 37,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF0085FF),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 583,
-                top: 444,
-                child: Text(
-                  'Accept Request',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 481,
-                child: Container(
-                  width: 1134,
-                  height: 39,
-                  decoration: ShapeDecoration(
-                    color: const Color(0x19EF4444),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: const Color(0xFFEF4444),
-                      ),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 586,
-                top: 490,
-                child: Text(
-                  'Reject Request',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: const Color(0xFFEF4444),
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 52,
-                top: 569,
-                child: Container(
-                  width: 1168,
-                  height: 373,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF222222),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: Colors.white.withValues(alpha: 26),
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 586,
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  decoration: ShapeDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage("https://placehold.co/50x50"),
-                      fit: BoxFit.contain,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 2,
-                        color: const Color(0xFF0085FF),
-                      ),
-                      borderRadius: BorderRadius.circular(16777200),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 131,
-                top: 588,
-                child: Text(
-                  'Michael Chen',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.33,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 131,
-                top: 616,
-                child: Text(
-                  '★',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 151,
-                top: 616,
-                child: Text(
-                  '4.9',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 177,
-                top: 616,
-                child: Text(
-                  '(45 reviews)',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1066,
-                top: 586,
-                child: Container(
-                  width: 62,
-                  height: 26,
-                  decoration: ShapeDecoration(
-                    color: const Color(0x1FF59E0B),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1074,
-                top: 590,
-                child: Text(
-                  'Pending',
-                  style: TextStyle(
-                    color: const Color(0xFFF59E0B),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1137,
-                top: 590,
-                child: Text(
-                  '2024-01-14',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 652,
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: ShapeDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage("https://placehold.co/60x60"),
-                      fit: BoxFit.contain,
-                    ),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 141,
-                top: 652,
-                child: Text(
-                  'DeWalt Power Drill - Professional Grade',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.38,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 141,
-                top: 682,
-                child: Text(
-                  'Start:',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 175,
-                top: 682,
-                child: Text(
-                  '2024-01-18',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 676,
-                top: 682,
-                child: Text(
-                  'End:',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 705,
-                top: 682,
-                child: Text(
-                  '2024-01-22',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 141,
-                top: 708,
-                child: Text(
-                  'Duration:',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 196,
-                top: 708,
-                child: Text(
-                  '4 days',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 676,
-                top: 708,
-                child: Text(
-                  'Total:',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 711,
-                top: 708,
-                child: Text(
-                  '\$100',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 738,
-                child: Container(
-                  width: 1134,
-                  height: 71,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF333333),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 81,
-                top: 750,
-                child: Text(
-                  'Message from renter:',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 81,
-                top: 779,
-                child: Text(
-                  'Hello! I need this for building a deck. I can provide references and have insurance coverage.',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 825,
-                child: Container(
-                  width: 1134,
-                  height: 37,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF0085FF),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 583,
-                top: 833,
-                child: Text(
-                  'Accept Request',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 870,
-                child: Container(
-                  width: 1134,
-                  height: 39,
-                  decoration: ShapeDecoration(
-                    color: const Color(0x19EF4444),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: const Color(0xFFEF4444),
-                      ),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 586,
-                top: 879,
-                child: Text(
-                  'Reject Request',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: const Color(0xFFEF4444),
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 52,
-                top: 958,
-                child: Container(
-                  width: 1168,
-                  height: 375,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF222222),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: Colors.white.withValues(alpha: 26),
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 975,
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  decoration: ShapeDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage("https://placehold.co/50x50"),
-                      fit: BoxFit.contain,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 2,
-                        color: const Color(0xFF0085FF),
-                      ),
-                      borderRadius: BorderRadius.circular(16777200),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 131,
-                top: 977,
-                child: Text(
-                  'Emily Rodriguez',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.33,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 131,
-                top: 1005,
-                child: Text(
-                  '★',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 151,
-                top: 1005,
-                child: Text(
-                  '4.7',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 176,
-                top: 1005,
-                child: Text(
-                  '(12 reviews)',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1059,
-                top: 975,
-                child: Container(
-                  width: 70,
-                  height: 26,
-                  decoration: ShapeDecoration(
-                    color: const Color(0x1F10B981),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1067,
-                top: 979,
-                child: Text(
-                  'Accepted',
-                  style: TextStyle(
-                    color: const Color(0xFF10B981),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1137,
-                top: 979,
-                child: Text(
-                  '2024-01-13',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 1041,
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: ShapeDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage("https://placehold.co/60x60"),
-                      fit: BoxFit.contain,
-                    ),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 141,
-                top: 1041,
-                child: Text(
-                  'DeWalt Power Drill - Professional Grade',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.38,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 141,
-                top: 1071,
-                child: Text(
-                  'Start:',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 175,
-                top: 1071,
-                child: Text(
-                  '2024-01-16',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 676,
-                top: 1071,
-                child: Text(
-                  'End:',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 705,
-                top: 1071,
-                child: Text(
-                  '2024-01-17',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 141,
-                top: 1097,
-                child: Text(
-                  'Duration:',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 196,
-                top: 1097,
-                child: Text(
-                  '1 day',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 676,
-                top: 1097,
-                child: Text(
-                  'Total:',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 711,
-                top: 1097,
-                child: Text(
-                  '\$25',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 1127,
-                child: Container(
-                  width: 1134,
-                  height: 71,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF333333),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 81,
-                top: 1139,
-                child: Text(
-                  'Message from renter:',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 81,
-                top: 1168,
-                child: Text(
-                  'Quick project, just need it for one day to hang some shelves. Very responsible renter!',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 1214,
-                child: Container(
-                  width: 1134,
-                  height: 39,
-                  decoration: ShapeDecoration(
-                    color: const Color(0x1910B981),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: const Color(0xFF10B981),
-                      ),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 575,
-                top: 1223,
-                child: Text(
-                  'Request Accepted',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: const Color(0xFF10B981),
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 1261,
-                child: Container(
-                  width: 1134,
-                  height: 39,
-                  decoration: ShapeDecoration(
-                    color: const Color(0x190085FF),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: const Color(0xFF0085FF),
-                      ),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 582,
-                top: 1270,
-                child: Text(
-                  'Message Renter',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 52,
-                top: 1349,
-                child: Container(
-                  width: 1168,
-                  height: 289,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF222222),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 1,
-                        color: Colors.white.withValues(alpha: 26),
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 1366,
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  decoration: ShapeDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage("https://placehold.co/50x50"),
-                      fit: BoxFit.contain,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        width: 2,
-                        color: const Color(0xFF0085FF),
-                      ),
-                      borderRadius: BorderRadius.circular(16777200),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 131,
-                top: 1368,
-                child: Text(
-                  'David Thompson',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.33,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 131,
-                top: 1396,
-                child: Text(
-                  '★',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 151,
-                top: 1396,
-                child: Text(
-                  '3.2',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 177,
-                top: 1396,
-                child: Text(
-                  '(8 reviews)',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1064,
-                top: 1366,
-                child: Container(
-                  width: 65,
-                  height: 26,
-                  decoration: ShapeDecoration(
-                    color: const Color(0x1FEF4444),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1072,
-                top: 1370,
-                child: Text(
-                  'Rejected',
-                  style: TextStyle(
-                    color: const Color(0xFFEF4444),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 1137,
-                top: 1370,
-                child: Text(
-                  '2024-01-12',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 1432,
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: ShapeDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage("https://placehold.co/60x60"),
-                      fit: BoxFit.contain,
-                    ),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 141,
-                top: 1432,
-                child: Text(
-                  'DeWalt Power Drill - Professional Grade',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.38,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 141,
-                top: 1462,
-                child: Text(
-                  'Start:',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 175,
-                top: 1462,
-                child: Text(
-                  '2024-01-15',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 676,
-                top: 1462,
-                child: Text(
-                  'End:',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 705,
-                top: 1462,
-                child: Text(
-                  '2024-01-20',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 141,
-                top: 1488,
-                child: Text(
-                  'Duration:',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 196,
-                top: 1488,
-                child: Text(
-                  '5 days',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 676,
-                top: 1488,
-                child: Text(
-                  'Total:',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 711,
-                top: 1488,
-                child: Text(
-                  '\$125',
-                  style: TextStyle(
-                    color: const Color(0xFF0085FF),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 69,
-                top: 1518,
-                child: Container(
-                  width: 1134,
-                  height: 71,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFF333333),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 81,
-                top: 1530,
-                child: Text(
-                  'Message from renter:',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    height: 1.50,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 81,
-                top: 1559,
-                child: Text(
-                  'Need this for a big construction project. Will pay extra if needed.',
-                  style: TextStyle(
-                    color: const Color(0xFF999999),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
-                    height: 1.50,
-                  ),
-                ),
-              ),
+              SizedBox(height: 32),
+              Text(
+                'Rental Requests',
+                style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Gestiona las solicitudes de las personas que quieren rentar tus artículos',
+                style: TextStyle(color: Colors.grey),
+              ),
+              SizedBox(height: 24),
             ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: TabBar(
+            controller: _tabController,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.grey,
+            indicatorColor: Colors.blue,
+            tabs: _statuses.map((s) => Tab(text: s)).toList(),
+            isScrollable: true,
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.7,
+          child: TabBarView(
+            controller: _tabController,
+            children: _statuses.map((status) {
+              final stream = _rentalRequestsStream(status);
+              if (stream == null) {
+                return const Center(
+                  child: Text('User not logged in', style: TextStyle(color: Colors.white)),
+                );
+              }
+
+              return StreamBuilder<QuerySnapshot>(
+                stream: stream,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final docs = snapshot.data?.docs ?? [];
+
+                  if (docs.isEmpty) {
+                    return const Center(
+                      child: Text('No requests found', style: TextStyle(color: Colors.white)),
+                    );
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    itemCount: docs.length,
+                    itemBuilder: (context, index) {
+                      final doc = docs[index];
+                      final data = doc.data() as Map<String, dynamic>;
+                      return _RentalRequestCard(data: data, requestId: doc.id);
+                    },
+                  );
+                },
+              );
+            }).toList(),
           ),
         ),
       ],
     );
   }
+}
+
+class _RentalRequestCard extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final String requestId;
+
+  const _RentalRequestCard({
+    required this.data,
+    required this.requestId,
+  });
+
+  String _cleanStatus(String rawStatus) {
+    return rawStatus.capitalize();
+  }
+
+  Future<void> _updateStatus(BuildContext context, String newStatus) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('rentalRequests')
+          .doc(requestId)
+          .update({'status': newStatus});
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Solicitud $newStatus'.capitalize())),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error actualizando solicitud: $e')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final renterName = data['renterName'] ?? 'Unknown';
+    final statusRaw = data['status'] ?? 'pending';
+    final status = _cleanStatus(statusRaw);
+    final productName = data['productName'] ?? 'Product';
+    final startDate = data['startDate'] ?? '';
+    final endDate = data['endDate'] ?? '';
+    final total = data['total']?.toString() ?? '\$0';
+    final message = data['message'] ?? '';
+    final duration = data['duration']?.toString() ?? '';
+
+    Color statusColor;
+    switch (status) {
+      case 'Accepted':
+        statusColor = Colors.green;
+        break;
+      case 'Rejected':
+        statusColor = Colors.red;
+        break;
+      default:
+        statusColor = Colors.amber;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade800),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    child: Text(renterName.substring(0, 2).toUpperCase()),
+                    backgroundColor: Colors.blueGrey,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(renterName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(status, style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+          Text(productName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+
+          Row(
+            children: [
+              Text('Start: $startDate', style: const TextStyle(color: Colors.grey)),
+              const SizedBox(width: 16),
+              Text('End: $endDate', style: const TextStyle(color: Colors.grey)),
+              const SizedBox(width: 16),
+              Text('Duration: $duration', style: const TextStyle(color: Colors.grey)),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text('Total: $total', style: const TextStyle(color: Colors.blueAccent)),
+
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2B2B2B),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(message, style: const TextStyle(color: Colors.white70)),
+          ),
+          const SizedBox(height: 12),
+
+          // Buttons for Pending
+          if (statusRaw == 'pending') ...[
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _updateStatus(context, 'accepted'),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                    child: const Text('Aceptar'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => _updateStatus(context, 'rejected'),
+                    style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+                    child: const Text('Rechazar'),
+                  ),
+                ),
+              ],
+            ),
+          ] else if (statusRaw == 'accepted') ...[
+            OutlinedButton(
+              onPressed: () {
+                // Aquí puedes abrir chat o enviar mensaje
+              },
+              style: OutlinedButton.styleFrom(foregroundColor: Colors.tealAccent),
+              child: const Text('Contactar al solicitante'),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+extension StringCasingExtension on String {
+  String capitalize() =>
+      isEmpty ? this : '${this[0].toUpperCase()}${substring(1).toLowerCase()}';
 }

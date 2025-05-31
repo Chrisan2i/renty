@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../features/rentals/views/my_rental_requests_page.dart';
 
 class NotificationIcon extends StatefulWidget {
   const NotificationIcon({super.key});
@@ -28,6 +29,24 @@ class _NotificationIconState extends State<NotificationIcon> {
     setState(() {
       _notifications = snapshot.docs;
     });
+  }
+
+  void _handleNotificationTap(BuildContext context, Map<String, dynamic> data, String docId) async {
+    // Marcar como leída
+    await FirebaseFirestore.instance
+        .collection('notifications')
+        .doc(docId)
+        .update({'read': true});
+
+    _removePopup();
+
+    // Validar el tipo
+    final type = data['type'];
+    final requestId = data['requestId'];
+
+    if (type == 'rental_request' && requestId != null) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const MyRentalRequestsPage()));
+    }
   }
 
   void _showPopupMenu(BuildContext context) async {
@@ -58,24 +77,29 @@ class _NotificationIconState extends State<NotificationIcon> {
               separatorBuilder: (_, __) =>
               const Divider(color: Colors.white24),
               itemBuilder: (context, index) {
-                final data =
-                _notifications[index].data() as Map<String, dynamic>;
+                final doc = _notifications[index];
+                final data = doc.data() as Map<String, dynamic>;
+
                 return ListTile(
                   leading: const Icon(Icons.notifications_active,
                       color: Colors.white),
-                  title: Text(data['title'] ?? '',
-                      style: const TextStyle(color: Colors.white)),
-                  subtitle: Text(data['message'] ?? '',
-                      style: const TextStyle(color: Colors.white70)),
-                  trailing: const Icon(Icons.circle,
-                      color: Color(0xFF0085FF), size: 10),
-                  onTap: () {
-                    FirebaseFirestore.instance
-                        .collection('notifications')
-                        .doc(_notifications[index].id)
-                        .update({'read': true});
-                    _removePopup();
-                  },
+                  title: Text(
+                    data['title'] ?? '',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  subtitle: Text(
+                    data['message'] ?? '',
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                  trailing: (data['read'] == false)
+                      ? const Icon(Icons.circle,
+                      color: Color(0xFF0085FF), size: 10)
+                      : null,
+                  onTap: () => _handleNotificationTap(
+                    context,
+                    data,
+                    doc.id,
+                  ),
                 );
               },
             ),
