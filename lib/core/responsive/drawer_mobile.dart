@@ -7,8 +7,8 @@ import 'package:renty/features/profile/views/my_profile_page.dart';
 import 'package:renty/features/profile/views/profile_settings_page.dart';
 import 'package:renty/features/rentals/views/my_rentals_page.dart';
 import 'package:renty/features/rentals/views/my_rental_requests_page.dart';
-import 'package:renty/features/auth/views/login_page.dart';
-import 'package:renty/features/auth/views/sign_up_page.dart';
+import 'package:renty/features/auth/widgets/login.dart';
+import 'package:renty/features/auth/widgets/sign_up.dart';
 
 class RentyDrawer extends StatelessWidget {
   const RentyDrawer({super.key});
