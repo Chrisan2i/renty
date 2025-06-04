@@ -4,6 +4,7 @@ import '../models/user_model.dart';
 import '../models/address_model.dart';
 import '../models/identity_verification.dart';
 import '../models/user_preferences.dart';
+import '../models/payment_method.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -64,6 +65,11 @@ class AuthService {
         theme: 'system',
         categoriesOfInterest: [],
       ),
+      paymentMethods: {
+        'binance': PaymentMethod(type: 'binance').toMapBinance(),
+        'pagoMovil': PaymentMethod(type: 'pagoMovil').toMapPagoMovil(),
+        'transferencia': PaymentMethod(type: 'transferencia').toMapTransferencia(),
+      },
     );
 
     // ✅ Guardar en Firestore
@@ -78,7 +84,6 @@ class AuthService {
         .snapshots()
         .map((doc) => UserModel.fromMap(doc.data()!));
   }
-
 
   /// Obtener usuario actual
   User? get currentUser => _auth.currentUser;

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'address_model.dart';
 import 'identity_verification.dart';
 import 'user_preferences.dart';
+import 'payment_method.dart'; // Asegúrate de importar esto
 
 class UserModel {
   final String userId;
@@ -27,6 +28,7 @@ class UserModel {
   final AddressModel? address;
   final IdentityVerification? identityVerification;
   final UserPreferences? preferences;
+  final Map<String, Map<String, dynamic>> paymentMethods;
 
   UserModel({
     required this.userId,
@@ -49,6 +51,7 @@ class UserModel {
     this.address,
     this.identityVerification,
     this.preferences,
+    this.paymentMethods = const {},
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
@@ -77,6 +80,11 @@ class UserModel {
       preferences: map['preferences'] != null
           ? UserPreferences.fromMap(map['preferences'])
           : null,
+      paymentMethods: map['paymentMethods'] != null
+          ? Map<String, Map<String, dynamic>>.from(
+          (map['paymentMethods'] as Map).map((key, value) =>
+              MapEntry(key.toString(), Map<String, dynamic>.from(value))))
+          : {},
     );
   }
 
@@ -101,6 +109,7 @@ class UserModel {
       'verified': verified,
       'address': address?.toMap(),
       'preferences': preferences?.toMap(),
+      'paymentMethods': paymentMethods,
       // ⚠️ identityVerification se guarda por separado
     };
   }

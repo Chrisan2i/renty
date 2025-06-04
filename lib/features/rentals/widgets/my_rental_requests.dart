@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../../features/payment/views/payment_page.dart';
 
 class MyRentalRequests extends StatefulWidget {
   const MyRentalRequests({Key? key}) : super(key: key);
@@ -12,12 +13,13 @@ class MyRentalRequests extends StatefulWidget {
 class _MyRentalRequestsState extends State<MyRentalRequests> with TickerProviderStateMixin {
   late TabController _tabController;
   final List<String> _statuses = ['All', 'Pending', 'Accepted', 'Rejected'];
-
   final Map<String, String> statusMap = {
     'Pending': 'pending',
     'Accepted': 'accepted',
     'Rejected': 'rejected',
   };
+
+  bool showReceived = true;
 
   @override
   void initState() {
@@ -31,7 +33,7 @@ class _MyRentalRequestsState extends State<MyRentalRequests> with TickerProvider
 
     final baseQuery = FirebaseFirestore.instance
         .collection('rentalRequests')
-        .where('ownerId', isEqualTo: uid);
+        .where(showReceived ? 'ownerId' : 'renterId', isEqualTo: uid);
 
     if (status == 'All') {
       return baseQuery.snapshots();
@@ -39,6 +41,39 @@ class _MyRentalRequestsState extends State<MyRentalRequests> with TickerProvider
       final statusValue = statusMap[status];
       return baseQuery.where('status', isEqualTo: statusValue).snapshots();
     }
+  }
+
+  Future<Map<String, String>> _loadCardData(Map<String, dynamic> data) async {
+    String productTitle = 'Producto no encontrado';
+    String ownerUsername = 'Usuario no encontrado';
+
+    try {
+      final productDoc = await FirebaseFirestore.instance
+          .collection('products')
+          .doc(data['productId'])
+          .get();
+
+      if (productDoc.exists) {
+        productTitle = productDoc.data()?['title'] ?? productTitle;
+      }
+
+      final userQuery = await FirebaseFirestore.instance
+          .collection('users')
+          .where('userId', isEqualTo: data['ownerId'])
+          .limit(1)
+          .get();
+
+      if (userQuery.docs.isNotEmpty) {
+        ownerUsername = userQuery.docs.first.data()['username'] ?? ownerUsername;
+      }
+    } catch (e) {
+      debugPrint('Error al cargar datos para la tarjeta: $e');
+    }
+
+    return {
+      'productTitle': productTitle,
+      'ownerUsername': ownerUsername,
+    };
   }
 
   @override
@@ -58,13 +93,38 @@ class _MyRentalRequestsState extends State<MyRentalRequests> with TickerProvider
               ),
               SizedBox(height: 8),
               Text(
-                'Gestiona las solicitudes de las personas que quieren rentar tus artículos',
-                style: TextStyle(color: Colors.grey),
+                'Gestiona las solicitudes de renta (enviadas o recibidas)',
+                style: TextStyle(color: Colors.white),
               ),
-              SizedBox(height: 24),
+              SizedBox(height: 16),
             ],
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Row(
+            children: [
+              ElevatedButton(
+                onPressed: () => setState(() => showReceived = true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: showReceived ? Colors.blue : Colors.grey[800],
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text("Recibidas"),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton(
+                onPressed: () => setState(() => showReceived = false),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: !showReceived ? Colors.blue : Colors.grey[800],
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text("Enviadas"),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: TabBar(
@@ -109,7 +169,53 @@ class _MyRentalRequestsState extends State<MyRentalRequests> with TickerProvider
                     itemBuilder: (context, index) {
                       final doc = docs[index];
                       final data = doc.data() as Map<String, dynamic>;
-                      return _RentalRequestCard(data: data, requestId: doc.id);
+                      final requestId = doc.id;
+
+                      return FutureBuilder<Map<String, String>>(
+                        future: _loadCardData(data),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 24),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E1E1E),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey.shade800),
+                              ),
+                              child: const Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      CircleAvatar(backgroundColor: Colors.grey),
+                                      SizedBox(width: 8),
+                                      Text('Cargando...', style: TextStyle(color: Colors.grey)),
+                                    ],
+                                  ),
+                                  SizedBox(height: 12),
+                                  Text('Producto...', style: TextStyle(color: Colors.grey)),
+                                  SizedBox(height: 8),
+                                  Text('Fechas...', style: TextStyle(color: Colors.grey)),
+                                  SizedBox(height: 4),
+                                  Text('Total: ---', style: TextStyle(color: Colors.grey)),
+                                ],
+                              ),
+                            );
+                          }
+
+                          final productTitle = snapshot.data!['productTitle']!;
+                          final ownerUsername = snapshot.data!['ownerUsername']!;
+
+                          return _RentalRequestCard(
+                            data: data,
+                            requestId: requestId,
+                            isReceived: showReceived,
+                            productTitle: productTitle,
+                            ownerUsername: ownerUsername,
+                          );
+                        },
+                      );
                     },
                   );
                 },
@@ -125,10 +231,16 @@ class _MyRentalRequestsState extends State<MyRentalRequests> with TickerProvider
 class _RentalRequestCard extends StatelessWidget {
   final Map<String, dynamic> data;
   final String requestId;
+  final bool isReceived;
+  final String productTitle;
+  final String ownerUsername;
 
   const _RentalRequestCard({
     required this.data,
     required this.requestId,
+    required this.isReceived,
+    required this.productTitle,
+    required this.ownerUsername,
   });
 
   String _cleanStatus(String rawStatus) {
@@ -151,12 +263,19 @@ class _RentalRequestCard extends StatelessWidget {
     }
   }
 
+  void _proceedToPayment(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentPage(requestId: requestId),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final renterName = data['renterName'] ?? 'Unknown';
     final statusRaw = data['status'] ?? 'pending';
     final status = _cleanStatus(statusRaw);
-    final productName = data['productName'] ?? 'Product';
     final startDate = data['startDate'] ?? '';
     final endDate = data['endDate'] ?? '';
     final total = data['total']?.toString() ?? '\$0';
@@ -186,18 +305,17 @@ class _RentalRequestCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
                   CircleAvatar(
-                    child: Text(renterName.substring(0, 2).toUpperCase()),
+                    child: Text(ownerUsername.substring(0, 2).toUpperCase()),
                     backgroundColor: Colors.blueGrey,
                   ),
                   const SizedBox(width: 8),
-                  Text(renterName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  Text(ownerUsername, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 ],
               ),
               Container(
@@ -210,11 +328,9 @@ class _RentalRequestCard extends StatelessWidget {
               ),
             ],
           ),
-
           const SizedBox(height: 12),
-          Text(productName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          Text(productTitle, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
-
           Row(
             children: [
               Text('Start: $startDate', style: const TextStyle(color: Colors.grey)),
@@ -226,7 +342,6 @@ class _RentalRequestCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text('Total: $total', style: const TextStyle(color: Colors.blueAccent)),
-
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(12),
@@ -237,9 +352,7 @@ class _RentalRequestCard extends StatelessWidget {
             child: Text(message, style: const TextStyle(color: Colors.white70)),
           ),
           const SizedBox(height: 12),
-
-          // Buttons for Pending
-          if (statusRaw == 'pending') ...[
+          if (statusRaw == 'pending' && isReceived) ...[
             Row(
               children: [
                 Expanded(
@@ -259,11 +372,18 @@ class _RentalRequestCard extends StatelessWidget {
                 ),
               ],
             ),
+          ] else if (!isReceived && statusRaw == 'accepted') ...[
+            ElevatedButton(
+              onPressed: () => _proceedToPayment(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Proceder con el pago'),
+            ),
           ] else if (statusRaw == 'accepted') ...[
             OutlinedButton(
-              onPressed: () {
-                // Aquí puedes abrir chat o enviar mensaje
-              },
+              onPressed: () {},
               style: OutlinedButton.styleFrom(foregroundColor: Colors.tealAccent),
               child: const Text('Contactar al solicitante'),
             ),
