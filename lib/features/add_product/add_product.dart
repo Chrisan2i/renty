@@ -21,7 +21,20 @@ class _AddProductState extends State<AddProduct> {
   final _formKey = GlobalKey<FormState>();
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
-  final _priceCtrl = TextEditingController();
+
+  final Map<String, TextEditingController> _rentalControllers = {
+    'hour': TextEditingController(),
+    'day': TextEditingController(),
+    'week': TextEditingController(),
+    'month': TextEditingController(),
+  };
+
+  final Map<String, bool> _rentalEnabled = {
+    'hour': false,
+    'day': true,
+    'week': false,
+    'month': false,
+  };
 
   List<Map<String, dynamic>> _categories = [];
   String? _selectedCategory;
@@ -57,7 +70,9 @@ class _AddProductState extends State<AddProduct> {
   void dispose() {
     _titleCtrl.dispose();
     _descCtrl.dispose();
-    _priceCtrl.dispose();
+    for (var ctrl in _rentalControllers.values) {
+      ctrl.dispose();
+    }
     super.dispose();
   }
 
@@ -134,7 +149,6 @@ class _AddProductState extends State<AddProduct> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Image selection
             GestureDetector(
               onTap: _pickImages,
               child: Container(
@@ -186,8 +200,6 @@ class _AddProductState extends State<AddProduct> {
               ),
             ),
             const SizedBox(height: 24),
-
-            // Title
             TextFormField(
               controller: _titleCtrl,
               decoration: const InputDecoration(
@@ -200,8 +212,6 @@ class _AddProductState extends State<AddProduct> {
               validator: (v) => v!.trim().isEmpty ? 'Requerido' : null,
             ),
             const SizedBox(height: 16),
-
-            // Description
             TextFormField(
               controller: _descCtrl,
               decoration: const InputDecoration(
@@ -215,29 +225,8 @@ class _AddProductState extends State<AddProduct> {
               validator: (v) => v!.trim().isEmpty ? 'Requerido' : null,
             ),
             const SizedBox(height: 16),
-
-            // Price and Category
             Row(
               children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _priceCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Precio por día',
-                      filled: true,
-                      fillColor: Color(0xFF222222),
-                      border: OutlineInputBorder(),
-                    ),
-                    style: const TextStyle(color: Colors.white),
-                    validator: (v) {
-                      final d = double.tryParse(v!);
-                      if (d == null || d <= 0) return 'Inválido';
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(width: 16),
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     value: _selectedCategory,
@@ -262,9 +251,57 @@ class _AddProductState extends State<AddProduct> {
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+            ..._rentalEnabled.keys.map((type) {
+              final labels = {
+                'hour': 'Por hora',
+                'day': 'Por día',
+                'week': 'Por semana',
+                'month': 'Por mes',
+              };
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _rentalEnabled[type],
+                        onChanged: (val) {
+                          setState(() {
+                            _rentalEnabled[type] = val!;
+                            if (!val) _rentalControllers[type]?.clear();
+                          });
+                        },
+                      ),
+                      Text(labels[type]!, style: const TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                  if (_rentalEnabled[type] == true)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 32, bottom: 12),
+                      child: TextFormField(
+                        controller: _rentalControllers[type],
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Precio',
+                          filled: true,
+                          fillColor: Color(0xFF222222),
+                          border: OutlineInputBorder(),
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                        validator: (v) {
+                          if (_rentalEnabled[type] == true) {
+                            final d = double.tryParse(v ?? '');
+                            if (d == null || d <= 0) return 'Inválido';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                ],
+              );
+            }),
             const SizedBox(height: 24),
-
-            // Submit
             ElevatedButton(
               onPressed: _isSubmitting ? null : _submitForm,
               style: ElevatedButton.styleFrom(
@@ -278,13 +315,9 @@ class _AddProductState extends State<AddProduct> {
                   ? const SizedBox(
                 height: 24,
                 width: 24,
-                child:
-                CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
               )
-                  : const Text(
-                'Publicar producto',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+                  : const Text('Publicar producto', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             const SizedBox(height: 24),
           ],
@@ -293,9 +326,26 @@ class _AddProductState extends State<AddProduct> {
     );
   }
 
-
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
+
+    final Map<String, double> rentalPrices = {};
+    _rentalEnabled.forEach((type, enabled) {
+      if (enabled) {
+        final text = _rentalControllers[type]!.text.trim();
+        final value = double.tryParse(text);
+        if (value != null && value > 0) {
+          rentalPrices[type] = value;
+        }
+      }
+    });
+
+    if (rentalPrices.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selecciona al menos un tipo de renta con precio válido')),
+      );
+      return;
+    }
 
     setState(() => _isSubmitting = true);
 
@@ -316,7 +366,7 @@ class _AddProductState extends State<AddProduct> {
         title: _titleCtrl.text.trim(),
         description: _descCtrl.text.trim(),
         category: _selectedCategory ?? '',
-        pricePerDay: double.parse(_priceCtrl.text.trim()),
+        rentalPrices: rentalPrices,
         images: imageUrls,
         isAvailable: true,
         rating: 0.0,

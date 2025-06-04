@@ -3,7 +3,6 @@ import 'package:renty/features/products/models/product_model.dart';
 import 'package:renty/features/products/views/product_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-
 class ProductCard extends StatelessWidget {
   final ProductModel product;
   const ProductCard({Key? key, required this.product}) : super(key: key);
@@ -11,7 +10,6 @@ class ProductCard extends StatelessWidget {
   void _navigateToDetails(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      // Si no está logueado, muestro un diálogo para Login o SignUp
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -42,11 +40,8 @@ class ProductCard extends StatelessWidget {
       return;
     }
 
-    // Si ya está logueado, sigue con la navegación normal:
     try {
-      debugPrint(
-          'Navigating to ProductPage with product: ${product.title} (ID: ${product.productId})'
-      );
+      debugPrint('Navigating to ProductPage with product: ${product.title} (ID: ${product.productId})');
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => ProductPage(product: product),
@@ -67,6 +62,19 @@ class ProductCard extends StatelessWidget {
         : 'https://placehold.co/400x300';
     final city = product.location['city'] ?? '';
     final state = product.location['state'] ?? '';
+
+    final rentalLabels = {
+      'hour': 'hr',
+      'day': 'day',
+      'week': 'wk',
+      'month': 'mo',
+    };
+
+    final rentalText = product.rentalPrices.entries.map((e) {
+      final label = rentalLabels[e.key] ?? e.key;
+      return '\$${e.value.toStringAsFixed(0)}/$label';
+    }).join(' • ');
+
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF222222),
@@ -128,10 +136,10 @@ class ProductCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  '\$${product.pricePerDay.toStringAsFixed(0)}/day',
+                  rentalText,
                   style: const TextStyle(
                     color: Color(0xFF0085FF),
-                    fontSize: 20,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

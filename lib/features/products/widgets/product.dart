@@ -70,6 +70,8 @@ class _ProductState extends State<Product> {
 
     final String category = product.category;
 
+    final double price = product.rentalPrices['day'] ?? product.rentalPrices.values.firstOrNull ?? 0.0;
+
     return SingleChildScrollView(
       child: Center(
         child: Container(
@@ -88,8 +90,7 @@ class _ProductState extends State<Product> {
                   decoration: const BoxDecoration(color: Color(0xFF111111)),
                 ),
               ),
-
-              // 🔁 Carrusel de imágenes
+              // Carrusel de imágenes
               Positioned(
                 left: 72,
                 top: 85,
@@ -153,8 +154,7 @@ class _ProductState extends State<Product> {
                   ],
                 ),
               ),
-
-              // 📦 Detalles del producto
+              // Detalles del producto
               Positioned(
                 left: 72,
                 top: 633,
@@ -238,7 +238,7 @@ class _ProductState extends State<Product> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '\$${product.pricePerDay.toStringAsFixed(0)}',
+                      '\$${price.toStringAsFixed(0)}',
                       style: const TextStyle(
                         color: Color(0xFF0085FF),
                         fontSize: 32,
@@ -272,7 +272,7 @@ class _ProductState extends State<Product> {
                         builder: (_) => SendRequestPage(
                           productId: product.productId,
                           ownerId: product.ownerId,
-                          pricePerDay: product.pricePerDay,
+                          pricePerDay: price,
                         ),
                       ),
                     );

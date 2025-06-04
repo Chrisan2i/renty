@@ -41,13 +41,15 @@ class ProductListPage extends StatelessWidget {
             itemCount: products.length,
             itemBuilder: (context, index) {
               final p = products[index];
+              final price = p.rentalPrices['day'] ?? p.rentalPrices.values.firstOrNull ?? 0.0;
+
               return Card(
                 elevation: 3,
                 margin: const EdgeInsets.symmetric(vertical: 8),
                 child: ListTile(
                   title: Text(p.title),
                   subtitle: Text(p.description),
-                  trailing: Text('\$${p.pricePerDay.toStringAsFixed(2)}/día'),
+                  trailing: Text('\$${price.toStringAsFixed(2)}'),
                   onTap: () {
                     // Aquí puedes ir a la pantalla del producto
                   },

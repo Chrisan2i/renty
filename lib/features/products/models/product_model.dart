@@ -6,7 +6,7 @@ class ProductModel {
   final String title;
   final String description;
   final String category;
-  final double pricePerDay;
+  final Map<String, double> rentalPrices;
   final List<String> images;
   final bool isAvailable;
   final double rating;
@@ -21,7 +21,7 @@ class ProductModel {
     required this.title,
     required this.description,
     required this.category,
-    required this.pricePerDay,
+    required this.rentalPrices,
     required this.images,
     required this.isAvailable,
     required this.rating,
@@ -37,7 +37,7 @@ class ProductModel {
     'title': title,
     'description': description,
     'category': category,
-    'pricePerDay': pricePerDay,
+    'rentalPrices': rentalPrices,
     'images': images,
     'isAvailable': isAvailable,
     'rating': rating,
@@ -53,7 +53,7 @@ class ProductModel {
     title: json['title'],
     description: json['description'],
     category: json['category'],
-    pricePerDay: (json['pricePerDay'] ?? 0).toDouble(),
+    rentalPrices: Map<String, double>.from(json['rentalPrices'] ?? {}),
     images: List<String>.from(json['images']),
     isAvailable: json['isAvailable'],
     rating: (json['rating'] ?? 0).toDouble(),
@@ -69,7 +69,7 @@ class ProductModel {
     String? title,
     String? description,
     String? category,
-    double? pricePerDay,
+    Map<String, double>? rentalPrices,
     List<String>? images,
     bool? isAvailable,
     double? rating,
@@ -84,7 +84,7 @@ class ProductModel {
       title: title ?? this.title,
       description: description ?? this.description,
       category: category ?? this.category,
-      pricePerDay: pricePerDay ?? this.pricePerDay,
+      rentalPrices: rentalPrices ?? this.rentalPrices,
       images: images ?? this.images,
       isAvailable: isAvailable ?? this.isAvailable,
       rating: rating ?? this.rating,
@@ -94,6 +94,7 @@ class ProductModel {
       location: location ?? this.location,
     );
   }
+
   factory ProductModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return ProductModel(
@@ -102,7 +103,7 @@ class ProductModel {
       title: data['title'] ?? '',
       description: data['description'] ?? '',
       category: data['category'] ?? '',
-      pricePerDay: (data['pricePerDay'] ?? 0).toDouble(),
+      rentalPrices: Map<String, double>.from(data['rentalPrices'] ?? {}),
       images: List<String>.from(data['images'] ?? []),
       isAvailable: data['isAvailable'] ?? true,
       rating: (data['rating'] ?? 0).toDouble(),
