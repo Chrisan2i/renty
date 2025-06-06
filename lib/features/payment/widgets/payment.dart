@@ -1,6 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:io';
 
 class Payment extends StatefulWidget {
   final String requestId;
@@ -20,11 +24,46 @@ class _PaymentState extends State<Payment> {
   Map<String, dynamic>? paymentMethods;
 
   int selectedIndex = 0;
+  String? screenshotUrl;
 
   @override
   void initState() {
     super.initState();
     fetchRentalData();
+  }
+
+  Future<void> uploadScreenshot() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+
+    final url = Uri.parse('https://api.cloudinary.com/v1_1/dmjwqsx8l/image/upload');
+    final request = http.MultipartRequest('POST', url)
+      ..fields['upload_preset'] = 'unsigned_renty';
+
+    // Convertir a bytes para Flutter Web
+    final bytes = await picked.readAsBytes();
+    final multipartFile = http.MultipartFile.fromBytes(
+      'file',
+      bytes,
+      filename: picked.name,
+    );
+
+    request.files.add(multipartFile);
+
+    final response = await request.send();
+    final body = await response.stream.bytesToString();
+    final jsonResp = json.decode(body);
+
+    if (jsonResp['secure_url'] != null) {
+      setState(() {
+        screenshotUrl = jsonResp['secure_url'];
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al subir imagen')),
+      );
+    }
   }
 
   Future<void> fetchRentalData() async {
@@ -55,7 +94,6 @@ class _PaymentState extends State<Payment> {
           .get();
       final user = userDoc.data();
       final username = user?['username'] ?? 'Usuario sin nombre';
-      print('Métodos desde Firestore: ${user?['paymentMethods']}');
       setState(() {
         rentalData = data;
         productTitle = title;
@@ -101,6 +139,64 @@ class _PaymentState extends State<Payment> {
     }
 
     return keys;
+  }
+
+  Future<void> confirmPayment() async {
+    if (screenshotUrl == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Debes subir un comprobante antes de confirmar')),
+      );
+      return;
+    }
+
+    final now = DateTime.now();
+
+    final paymentData = {
+      'paymentId': widget.requestId,
+      'rentalId': widget.requestId,
+      'payerId': rentalData!['renterId'],
+      'payeeId': rentalData!['ownerId'],
+      'amount': (rentalData!['dailyRate'] ?? 0) * (rentalData!['duration'] ?? 0) * 1.08,
+      'currency': 'USD',
+      'status': 'pending',
+      'createdAt': now,
+      'completedAt': null,
+      'method': getValidPaymentKeys()[selectedIndex],
+      'transactionRef': null,
+      'notes': null,
+      'screenshot': screenshotUrl,
+    };
+
+    final orderData = {
+      'orderId': widget.requestId,
+      'renterId': rentalData!['renterId'],
+      'ownerId': rentalData!['ownerId'],
+      'productId': rentalData!['productId'],
+      'startDate': rentalData!['startDate'],
+      'endDate': rentalData!['endDate'],
+      'duration': rentalData!['duration'],
+      'dailyRate': rentalData!['dailyRate'],
+      'status': 'pending',
+      'createdAt': now,
+      'paymentScreenshot': screenshotUrl,
+      'paymentMethod': getValidPaymentKeys()[selectedIndex],
+    };
+
+    await FirebaseFirestore.instance
+        .collection('payments')
+        .doc(widget.requestId)
+        .set(paymentData);
+
+    await FirebaseFirestore.instance
+        .collection('orders')
+        .doc(widget.requestId)
+        .set(orderData);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Pago y orden registrados correctamente')),
+    );
+
+    Navigator.pop(context);
   }
 
   String getDisplayName(String key) {
@@ -290,11 +386,20 @@ class _PaymentState extends State<Payment> {
                 onPressed: () => Navigator.pop(context),
                 child: const Text('Cancel', style: TextStyle(color: Colors.white)),
               ),
+              const SizedBox(height: 12),
               ElevatedButton(
-                onPressed: () {
-                  // Aquí iría la lógica de confirmación y pago
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                onPressed: uploadScreenshot,
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[800]),
+                child: const Text('Subir comprobante', style: TextStyle(color: Colors.white)),
+              ),
+              if (screenshotUrl != null)
+                const Text('Comprobante cargado correctamente ✅', style: TextStyle(color: Colors.green)),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: screenshotUrl == null ? null : confirmPayment,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: screenshotUrl == null ? Colors.grey : Colors.blue,
+                ),
                 child: const Text('Confirm Rental'),
               ),
             ],

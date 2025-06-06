@@ -88,11 +88,6 @@ class _MyRentalRequestsState extends State<MyRentalRequests> with TickerProvider
             children: [
               SizedBox(height: 32),
               Text(
-                'Rental Requests',
-                style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-              Text(
                 'Gestiona las solicitudes de renta (enviadas o recibidas)',
                 style: TextStyle(color: Colors.white),
               ),

@@ -5,9 +5,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../features/landing/views/landing_page.dart';
 import 'package:renty/features/profile/views/profile_settings_page.dart';
 import 'package:renty/features/profile/views/my_profile_page.dart';
-import 'package:renty/features/rentals/views/my_rentals_page.dart';
-import '../../../features/rentals/views/my_rental_requests_page.dart';
+import 'package:renty/features/rentals/views/rentals_page.dart';
+import '../../../features/rentals/views/rental_requests_page.dart';
 import 'package:renty/core/widgets/navbar/notification_icon.dart';
+import '../../../features/orders/views/orders_page.dart';
 
 class Navbar extends StatelessWidget {
   final String email;
@@ -54,7 +55,7 @@ class Navbar extends StatelessWidget {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const MyRentalRequestsPage()));
                   }),
                   _navItem(context, 'Ordenes', () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const LandingPage()));
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersPage()));
                   }),
                 ],
               ),

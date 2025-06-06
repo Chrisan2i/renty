@@ -11,6 +11,7 @@ class Payment {
   final String method;            // Método de pago: wallet | card | transfer
   final String? transactionRef;   // Referencia externa (Stripe, banco, etc.)
   final String? notes;            // Notas adicionales si aplica
+  final String screenshot;        // Captura del pago
 
   Payment({
     required this.paymentId,
@@ -25,6 +26,7 @@ class Payment {
     required this.method,
     this.transactionRef,
     this.notes,
+    required this.screenshot,
   });
 
   factory Payment.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,7 @@ class Payment {
       method: json['method'],
       transactionRef: json['transactionRef'],
       notes: json['notes'],
+      screenshot: json['screenshot']
     );
   }
 
@@ -58,6 +61,7 @@ class Payment {
       'method': method,
       'transactionRef': transactionRef,
       'notes': notes,
+      'screenshot': screenshot,
     };
   }
 }
