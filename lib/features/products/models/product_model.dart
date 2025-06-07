@@ -11,6 +11,7 @@ class ProductModel {
   final bool isAvailable;
   final double rating;
   final int totalReviews;
+  final int views; // 👈 NUEVO
   final DateTime createdAt;
   final DateTime updatedAt;
   final Map<String, dynamic> location;
@@ -26,6 +27,7 @@ class ProductModel {
     required this.isAvailable,
     required this.rating,
     required this.totalReviews,
+    required this.views, // 👈 NUEVO
     required this.createdAt,
     required this.updatedAt,
     required this.location,
@@ -42,6 +44,7 @@ class ProductModel {
     'isAvailable': isAvailable,
     'rating': rating,
     'totalReviews': totalReviews,
+    'views': views, // 👈 NUEVO
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
     'location': location,
@@ -58,6 +61,7 @@ class ProductModel {
     isAvailable: json['isAvailable'],
     rating: (json['rating'] ?? 0).toDouble(),
     totalReviews: json['totalReviews'],
+    views: json['views'] ?? 0, // 👈 NUEVO
     createdAt: DateTime.parse(json['createdAt']),
     updatedAt: DateTime.parse(json['updatedAt']),
     location: Map<String, dynamic>.from(json['location']),
@@ -74,6 +78,7 @@ class ProductModel {
     bool? isAvailable,
     double? rating,
     int? totalReviews,
+    int? views, // 👈 NUEVO
     DateTime? createdAt,
     DateTime? updatedAt,
     Map<String, dynamic>? location,
@@ -89,6 +94,7 @@ class ProductModel {
       isAvailable: isAvailable ?? this.isAvailable,
       rating: rating ?? this.rating,
       totalReviews: totalReviews ?? this.totalReviews,
+      views: views ?? this.views, // 👈 NUEVO
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       location: location ?? this.location,
@@ -108,6 +114,7 @@ class ProductModel {
       isAvailable: data['isAvailable'] ?? true,
       rating: (data['rating'] ?? 0).toDouble(),
       totalReviews: data['totalReviews'] ?? 0,
+      views: data['views'] ?? 0,
       createdAt: DateTime.tryParse(data['createdAt'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(data['updatedAt'] ?? '') ?? DateTime.now(),
       location: Map<String, dynamic>.from(data['location'] ?? {}),

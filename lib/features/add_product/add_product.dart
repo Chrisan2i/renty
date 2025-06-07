@@ -370,6 +370,7 @@ class _AddProductState extends State<AddProduct> {
         isAvailable: true,
         rating: 0.0,
         totalReviews: 0,
+        views: 0,
         createdAt: now,
         updatedAt: now,
         location: {
