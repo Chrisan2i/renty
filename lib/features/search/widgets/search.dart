@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:renty/features/products/models/product_model.dart';
 import 'package:renty/features/products/services/product_service.dart';
-import 'package:renty/features/products/widgets/product_card.dart';
-import 'package:renty/features/categories/models/category_model.dart';
-import 'package:renty/features/categories/services/category_service.dart';
 import 'package:renty/features/products/widgets/product_grib.dart';
 import 'package:renty/features/search/widgets/product_filter_sheet.dart';
 
@@ -203,7 +200,7 @@ class _SearchState extends State<Search> {
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 1200),
                       child: ProductGrid(
-                        products: filtered, 
+                        products: filtered,
                       ),
                     ),
                   ),

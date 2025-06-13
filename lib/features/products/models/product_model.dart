@@ -11,7 +11,7 @@ class ProductModel {
   final bool isAvailable;
   final double rating;
   final int totalReviews;
-  final int views; // 👈 NUEVO
+  final int views;
   final DateTime createdAt;
   final DateTime updatedAt;
   final Map<String, dynamic> location;
@@ -27,7 +27,7 @@ class ProductModel {
     required this.isAvailable,
     required this.rating,
     required this.totalReviews,
-    required this.views, // 👈 NUEVO
+    required this.views,
     required this.createdAt,
     required this.updatedAt,
     required this.location,
@@ -44,7 +44,7 @@ class ProductModel {
     'isAvailable': isAvailable,
     'rating': rating,
     'totalReviews': totalReviews,
-    'views': views, // 👈 NUEVO
+    'views': views,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
     'location': location,
@@ -61,7 +61,7 @@ class ProductModel {
     isAvailable: json['isAvailable'],
     rating: (json['rating'] ?? 0).toDouble(),
     totalReviews: json['totalReviews'],
-    views: json['views'] ?? 0, // 👈 NUEVO
+    views: json['views'] ?? 0,
     createdAt: DateTime.parse(json['createdAt']),
     updatedAt: DateTime.parse(json['updatedAt']),
     location: Map<String, dynamic>.from(json['location']),
@@ -78,7 +78,7 @@ class ProductModel {
     bool? isAvailable,
     double? rating,
     int? totalReviews,
-    int? views, // 👈 NUEVO
+    int? views,
     DateTime? createdAt,
     DateTime? updatedAt,
     Map<String, dynamic>? location,
@@ -94,7 +94,7 @@ class ProductModel {
       isAvailable: isAvailable ?? this.isAvailable,
       rating: rating ?? this.rating,
       totalReviews: totalReviews ?? this.totalReviews,
-      views: views ?? this.views, // 👈 NUEVO
+      views: views ?? this.views,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       location: location ?? this.location,
@@ -102,22 +102,71 @@ class ProductModel {
   }
 
   factory ProductModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>?; // Make data nullable
+    if (data == null) {
+      // Handle the case where document data is null (shouldn't happen often if exists is true)
+      print("Warning: Document data is null for doc ID: ${doc.id}");
+      return ProductModel(
+        productId: doc.id, // Use doc ID as productId fallback
+        ownerId: '',
+        title: 'Producto no disponible',
+        description: '',
+        category: '',
+        rentalPrices: {},
+        images: [],
+        isAvailable: false,
+        rating: 0.0,
+        totalReviews: 0,
+        views: 0,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        location: {},
+      );
+    }
+
+    // A veces, createdAt y updatedAt pueden venir como Timestamp si no se guardaron como String
+    // Tu código asume String. Si en Firestore son Timestamps, necesitas adaptarlo.
+    DateTime? parsedCreatedAt;
+    if (data['createdAt'] is Timestamp) {
+      parsedCreatedAt = (data['createdAt'] as Timestamp).toDate();
+    } else if (data['createdAt'] is String) {
+      parsedCreatedAt = DateTime.tryParse(data['createdAt']);
+    }
+
+    DateTime? parsedUpdatedAt;
+    if (data['updatedAt'] is Timestamp) {
+      parsedUpdatedAt = (data['updatedAt'] as Timestamp).toDate();
+    } else if (data['updatedAt'] is String) {
+      parsedUpdatedAt = DateTime.tryParse(data['updatedAt']);
+    }
+
     return ProductModel(
-      productId: data['productId'] ?? '',
+      productId: data['productId'] ?? doc.id, // Usa doc.id como fallback si productId no está en el doc
       ownerId: data['ownerId'] ?? '',
-      title: data['title'] ?? '',
+      title: data['title'] ?? 'Sin título',
       description: data['description'] ?? '',
-      category: data['category'] ?? '',
+      category: data['category'] ?? 'General',
+      // Asegura que rentalPrices y location sean mapas, incluso si vienen nulos
       rentalPrices: Map<String, double>.from(data['rentalPrices'] ?? {}),
-      images: List<String>.from(data['images'] ?? []),
+      images: List<String>.from(data['images'] ?? []), // Asegura que images sea una lista de strings
       isAvailable: data['isAvailable'] ?? true,
-      rating: (data['rating'] ?? 0).toDouble(),
+      rating: _getDoubleFromDynamic(data['rating']),
       totalReviews: data['totalReviews'] ?? 0,
       views: data['views'] ?? 0,
-      createdAt: DateTime.tryParse(data['createdAt'] ?? '') ?? DateTime.now(),
-      updatedAt: DateTime.tryParse(data['updatedAt'] ?? '') ?? DateTime.now(),
+      createdAt: parsedCreatedAt ?? DateTime.now(),
+      updatedAt: parsedUpdatedAt ?? DateTime.now(),
       location: Map<String, dynamic>.from(data['location'] ?? {}),
     );
+  }
+
+  // Función auxiliar para manejar 'int' o 'double' para la calificación
+  static double _getDoubleFromDynamic(dynamic value) {
+    if (value is int) {
+      return value.toDouble();
+    } else if (value is double) {
+      return value;
+    } else {
+      return 0.0; // Valor predeterminado si no es int ni double
+    }
   }
 }

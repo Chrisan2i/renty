@@ -131,7 +131,7 @@ class Navbar extends StatelessWidget {
 
   Widget _userMenu(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
-    const defaultImageUrl = 'https://res.cloudinary.com/do9dtxrvh/image/upload/v1742413057/Untitled_design_1_hvuwau.png';
+    const defaultImageUrl = 'https://res.cloudinary.com/do9dtxrvh/image/upload/v1742413057/';
 
     return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance.collection('users').doc(user?.uid).snapshots(),
